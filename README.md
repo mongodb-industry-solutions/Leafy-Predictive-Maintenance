@@ -57,6 +57,7 @@ You will need to search for "Cloud Translation API" and create a new API key. Co
       
 ### Integrating Atlas Charts
 To integrate Atlas Charts, you will need to create a charts dashboard on MongoDB Atlas and copy the iframe link into the `NEXT_PUBLIC_APP_IFRAME_SRC`.
+Link the Atlas charts dashboard to machine_failures collection. You can create any widgets you want :) 
 
 ## Step 3: Add some Documents in MongoDB
 
