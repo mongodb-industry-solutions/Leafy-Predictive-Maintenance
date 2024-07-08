@@ -1,0 +1,10 @@
+services:
+  predictive-maintenance-hosted:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: predictive-maintenance-hosted:latest
+    ports:
+      - "3000:3000"
+    restart: always
+    container_name: predictive-maintenance-hosted

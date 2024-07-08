@@ -1,0 +1,7 @@
+[ { $source: { "connectionName": "atlassource", "db": "smart_factory", "coll": "raw_data" } }, { $addFields: { sessionID: "$fullDocument.Session ID", machineID: "M0001", data: { "Product ID": "$fullDocument.Product ID", "Type": "$fullDocument.Type", "Air temperature [K]": { $toDouble: "$fullDocument.Air temperature [K]" }, "Process temperature [K]": { $toDouble: "$fullDocument.Process temperature [K]" }, "Rotational speed [rpm]": { $toInt: "$fullDocument.Rotational speed [rpm]" }, "Torque [Nm]": { $toDouble: "$fullDocument.Torque [Nm]" }, "Tool wear [min]": { $toInt: "$fullDocument.Tool wear [min]" } } } }, { "$unset": [ "documentKey", "fullDocument", "ns", "operationType", "wallTime", "clusterTime", "_id", "_stream_meta"] }, { "$merge": { "into": { "connectionName": "atlassink", "db": "smart_factory", "coll": "transformed_data" } } }]
+
+
+
+
+
+
