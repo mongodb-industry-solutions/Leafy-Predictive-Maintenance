@@ -61,7 +61,7 @@ Link the Atlas charts dashboard to machine_failures collection. You can create a
 
 ## Step 3: Add some Documents in MongoDB
 
-Import the documents provided [here](https://github.com/mongodb-industry-solutions/Predictive-Maintenance-Public/tree/main/collections) into Atlas. These include different PDFs (maintenance history document, maintenance instructions and repair plans) that will be used for retrieval-augmented generation in the demo.
+Import the documents provided [here](https://github.com/mongodb-industry-solutions/Leafy-Predictive-Maintenance/tree/main/collections) into Atlas. These include different PDFs (maintenance history document, maintenance instructions and repair plans) that will be used for retrieval-augmented generation in the demo.
 
 The application setup is not finished. Now that you've uploaded the chunks and embeddings with metadata in MongoDB, in order to perform searches, you will need to create the index.
 
