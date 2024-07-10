@@ -69,8 +69,9 @@ The application setup is not finished. Now that you've uploaded the chunks and e
 Go to MongoDB Atlas and navigate to Atlas Search.
 
 Click "Create Search Index" and select JSON Editor under Atlas Vector Search.
-Choose the database and collection you created earlier.
-Set "pred_maint_repair_index" as the Index Name.
+Choose the database and collection (REPAIR_MANUALS_COLLECTION) you created earlier.
+Set "pred_maint_repair_index" as the Index Name and update your env file variable REPAIR_PLAN_SEARCH_INDEX.
+
 Paste the following index definition in the edit box:
 ```
 {
@@ -87,11 +88,9 @@ Paste the following index definition in the edit box:
 
 Click "Next" and then "Create Search Index."
 
-Follow the same steps to create two more indexes:
+Follow the same steps to create one more index:
 
-- Set "pred_maint_instructions_index" as the Index Name and paste the same index as the one above.
-
-- Set "pred_maint_criticality_index" as the Index Name, and paste the following index: 
+- Set "pred_maint_criticality_index" as the Index Name, for collection (MAINTAINENCE_HISTORY_COLLECTION) and paste the following index: 
 
 ```
 {
@@ -109,6 +108,7 @@ Follow the same steps to create two more indexes:
   ]
 }
 ```
+update your env file variable CRITICALITY_ANALYSIS_SEARCH_INDEX value
 
 ## Step 5. Running the Inference Script
 
