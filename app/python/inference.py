@@ -7,6 +7,10 @@ import pandas as pd
 from sklearn import tree
 from pymongo import MongoClient
 from bson.json_util import dumps
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 MONGODB_CONNECTION_STRING = os.environ.get('MONGODB_CONNECTION_STRING')
 DATABASE=os.environ.get('DATABASE')
