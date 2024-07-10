@@ -117,6 +117,8 @@ First, make sure you imported the 'collections/smart_factory.ml_models.json' int
 Next, install the necessary python dependencies and navigate to the `app/python` directory and execute the script with the following command separately:
 `python inference.py`
 
+Make sure you have an .env file in the same folder as inference.py with the required variables 
+
 This script performs automated predictive maintenance using MongoDB and a pre-trained machine learning model. If a failure is predicted, it logs the details to a failure collection. This process streamlines maintenance tasks by automatically detecting and recording potential machine issues.
 
 ## Step 6. Atlas Stream Processing Setup
