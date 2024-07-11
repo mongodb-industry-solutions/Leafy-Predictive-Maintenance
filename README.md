@@ -1,4 +1,4 @@
-# Predictive-Maintenance-Public
+# Leafy-Predictive-Maintenance
 
 This demo demonstrates MongoDB Atlas’s capabilities for predictive maintenance through three key features: 
 - **Equipment Criticality Analysis** for prioritizing machines using AI and semantic searches
