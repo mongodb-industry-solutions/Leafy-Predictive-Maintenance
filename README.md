@@ -56,8 +56,10 @@ You will need to search for "Cloud Translation API" and create a new API key. Co
 > Feel free to use any other translation API, just make sure to make the necessary changes in the `translate.js` file.
       
 ### Integrating Atlas Charts
-To integrate Atlas Charts, you will need to create a charts dashboard on MongoDB Atlas and copy the iframe link into the `NEXT_PUBLIC_APP_IFRAME_SRC`.
-Link the Atlas charts dashboard to machine_failures collection. You can create any widgets you want :) 
+To integrate Atlas Charts, you will need to create a charts dashboard on MongoDB Atlas and copy the iframe link into the `NEXT_PUBLIC_APP_IFRAME_SRC`. Follow this [tutorial](https://www.mongodb.com/docs/charts/embedding-charts-iframe/) on how to get the iframe link from Atlas Charts.
+Link the Atlas charts dashboard to machine_failures collection. You can create any widgets you want :)
+We have also included a .charts file in [public](https://github.com/mongodb-industry-solutions/Leafy-Predictive-Maintenance/tree/main/public) folder. You can also use that. Just follow this [tutorial](https://www.mongodb.com/docs/charts/dashboards/dashboard-import-export) on how to import Charts.
+
 
 ## Step 3: Add some Documents in MongoDB
 
@@ -161,7 +163,7 @@ Locate the `atlasConfig` and replace the placeholder values with your actual con
 ### Run the App
 
 - Open App.xcodeproj in Xcode.
-- Wait for SPM to download dependencies.
+- Wait for it to download dependencies.
 - Press "Run".
 
 ## Step 8. Run the Demo
