@@ -88,7 +88,7 @@ export default async function handler(req, res) {
             path: "embeddings",
             queryVector: vector[0],
             numCandidates: 150,
-            limit: 10,
+            limit: 15,
           },
         },
       ])
