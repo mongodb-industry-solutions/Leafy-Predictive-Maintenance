@@ -1,90 +1,118 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { MongoClient } from 'mongodb';
-import { OpenAIEmbeddings, ChatOpenAI } from "@langchain/openai";
-import { PromptTemplate } from "@langchain/core/prompts";
-import {HumanMessage} from "@langchain/core/messages";
+import { MongoClient } from "mongodb";
+import {
+  BedrockRuntimeClient,
+  InvokeModelCommand,
+} from "@aws-sdk/client-bedrock-runtime";
 
+const client = new MongoClient(process.env.MONGODB_CONNECTION_STRING);
 
+const bedrockClient = new BedrockRuntimeClient({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
 
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-  const OPENAI_API_MODEL=process.env.OPENAI_API_MODEL;
-  const uri = process.env.MONGODB_CONNECTION_STRING;
-  const dbName=process.env.DATABASE;
-  const collectionName = process.env.REPAIR_MANUALS_COLLECTION; 
-  const indexName=process.env.REPAIR_PLAN_SEARCH_INDEX;
+async function getEmbeddings(texts) {
+  const input = {
+    modelId: "cohere.embed-english-v3",
+    contentType: "application/json",
+    accept: "application/json",
+    body: JSON.stringify({
+      texts,
+      input_type: "search_document",
+    }),
+  };
 
+  const command = new InvokeModelCommand(input);
+  const response = await bedrockClient.send(command);
+  const rawRes = response.body;
 
-  //initialize model and embeddings
-  const model = new ChatOpenAI({
-    apiKey: OPENAI_API_KEY,
-    modelName: OPENAI_API_MODEL,
-  });
-  
-  const embeddings = new OpenAIEmbeddings({
-    apiKey: OPENAI_API_KEY,
-  });
+  const jsonString = new TextDecoder().decode(rawRes);
+  const parsedResponse = JSON.parse(jsonString);
 
+  return parsedResponse.embeddings;
+}
 
+async function generateCompletion(prompt) {
+  const input = {
+    modelId: "cohere.command-r-v1:0",
+    contentType: "application/json",
+    accept: "*/*",
+    body: JSON.stringify({
+      message: prompt,
+      max_tokens: 400,
+      temperature: 0.75,
+      p: 0.01,
+      k: 0,
+      stop_sequences: [],
+    }),
+  };
 
-  // Initialize MongoDB Client
-  const client = new MongoClient(uri);
+  const command = new InvokeModelCommand(input);
+  const response = await bedrockClient.send(command);
+  const rawRes = response.body;
 
-  export default async function handler(req = NextApiRequest, res = NextApiResponse) {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ message: 'Method not allowed' });
-    }
-  
-    let { question} = req.body;
+  const jsonString = new TextDecoder().decode(rawRes);
+  const parsedResponse = JSON.parse(jsonString);
 
-    if (!question) {
-      return res.status(400).json({ message: 'Question is required' });
-    }
-  
-    try {
-      // Connect to MongoDB
-      await client.connect();
-      const db = client.db(dbName);
-      const collection = db.collection(collectionName);
-      console.log("connected to MongoDB");
-      console.log(question);
-  
-      // Generate vector embeddings for the question
-      const vector = await embeddings.embedQuery(question);
-     // console.log(vector);
-  
-      const results = await collection.aggregate([
-        {
-          "$vectorSearch": {
-            "index": indexName,
-            "path": 'vector_embedding',
-            "queryVector": vector,
-            "numCandidates": 150,
-            "limit": 10
-          }
+  return parsedResponse.text;
+}
 
-        },
-      ]).toArray();
-      //console.log(results);
-      // Store the sources of data
-      const dataSources = results.map(obj => ({ source: obj.source }));
-      console.log(dataSources);
-      // Create context from search results
-      const context = results.map(result => result.text_chunk).join('\n');
-  
-      // Create prompt with context
-      const prompt = `Given the following context sections, answer the question using only the given context. If you are unsure and the answer is not explicitly written in the documentation, say "Sorry, I don't know how to help with that as I cannot find this information in the docs you provided. Adding to the question, also provide who will do the repair and which spare parts will be used and how long this repair will take based on old work orders info"\n\nContext:\n${context}\n\nQuestion: ${question}`;
-  
-      // Generate answer from LLM with context
-      const response =  await model.invoke([new HumanMessage({ content: prompt })]);
-
-    // console.log(response);
-
-  
-  
-      const answer = response.content.replace('\n','\n\n');
-      console.log(answer);
-      res.status(200).json({ answer,dataSources });
-    } catch (error) {
-      res.status(500).json({ message: 'Error generating answer', error: error.message });
-    }
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
   }
+
+  let { question } = req.body;
+
+  if (!question) {
+    return res.status(400).json({ message: "Question is required" });
+  }
+
+  try {
+    await client.connect();
+    const db = client.db(process.env.DATABASE);
+    const collection = db.collection(process.env.REPAIR_MANUALS_COLLECTION);
+    console.log("Connected to MongoDB");
+
+    const vector = await getEmbeddings([question]);
+    console.log("Generated vector:", vector);
+
+    const results = await collection
+      .aggregate([
+        {
+          $vectorSearch: {
+            index: process.env.REPAIR_PLAN_SEARCH_INDEX,
+            path: "embeddings",
+            queryVector: vector[0],
+            numCandidates: 150,
+            limit: 10,
+          },
+        },
+      ])
+      .toArray();
+
+    //console.log("Results from MongoDB:", results);
+
+    const dataSources = results.map((obj) => ({ source: obj.source }));
+    //console.log(dataSources);
+    const context = results.map((result) => result.text_chunk).join("\n");
+    //console.log(context);
+
+    const prompt = `Given the following context sections, answer the question using only the given context. If you are unsure and the answer is not explicitly written in the documentation, say "Sorry, I don't know how to help with that as I cannot find this information in the docs you provided." Adding to the question, also provide who will do the repair and which spare parts will be used and how long this repair will take based on old work orders info.\n\nContext:\n${context}\n\nQuestion: ${question}`;
+
+    const completion = await generateCompletion(prompt);
+    const answer = completion.replace("\n", "\n\n");
+
+    res.status(200).json({ answer, dataSources });
+  } catch (error) {
+    console.error("Error in handler:", error);
+    res
+      .status(500)
+      .json({ message: "Error generating answer", error: error.message });
+  } finally {
+    await client.close();
+  }
+}
