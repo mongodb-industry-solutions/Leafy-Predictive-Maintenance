@@ -79,10 +79,10 @@ Paste the following index definition in the edit box:
 {
   "fields": [
     {
-      "type": "vector",
-      "path": "vector_embedding",
-      "numDimensions": 1536,
-      "similarity": "euclidean"
+      "numDimensions": 1024,
+      "path": "embeddings",
+      "similarity": "euclidean",
+      "type": "vector"
     }
   ]
 }
@@ -98,8 +98,8 @@ Follow the same steps to create one more index:
 {
   "fields": [
     {
-      "numDimensions": 1536,
-      "path": "vector_embedding",
+      "numDimensions": 1024,
+      "path": "embeddings",
       "similarity": "euclidean",
       "type": "vector"
     },
