@@ -78,7 +78,7 @@ export default async function handler(req, res) {
     console.log("Connected to MongoDB");
 
     const vector = await getEmbeddings([question]);
-    console.log("Generated vector:", vector);
+    //console.log("Generated vector:", vector);
 
     const results = await collection
       .aggregate([
