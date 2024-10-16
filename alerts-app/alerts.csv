@@ -1,0 +1,11 @@
+id,alertType,description,acknowledged
+1,TW Failure,Big Failure,False
+2,Power Failure,Small Failure,False
+3,Over Strain Failure,Big Failure,False
+4,TW Failure,Small Failure,False
+5,Power Failure,Big Failure,False
+6,Over Strain Failure,Small Failure,False
+7,TW Failure,Big Failure,False
+8,Power Failure,Small Failure,False
+9,Over Strain Failure,Big Failure,False
+10,TW FAilure,Small Failure,False
