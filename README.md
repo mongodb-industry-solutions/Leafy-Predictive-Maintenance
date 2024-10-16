@@ -130,42 +130,31 @@ This script performs automated predictive maintenance using MongoDB and a pre-tr
 2. Use the pipeline in ```ASP/ASP Pipeline``` file for the stream processor
 3. Make sure to setup your source and sink collections as listed in the Pipeline
 
-## Step 7. Run the Mobile App
-### App Services
+## Step 7. Run Alerts app
 
-First, you'll need to create the App Services App. 
+Navigate to the alerts-app directory:
+```
+cd alerts-app
+```
 
-#### Setup App Services CLI
+Create a .env file with the following content:
+```
+MONGODB_CONNECTION_STRING="your_mongodb_uri"
+DATABASE="your_mongodb_database"
+```
 
-1. [Install appservice-cli](https://www.mongodb.com/docs/atlas/app-services/cli/#app-services-cli)
-2. [Generate API key](https://www.mongodb.com/docs/atlas/app-services/cli/#generate-an-api-key), assign the ```Project Owner``` permission and add your IP address to the access list
-3. [Login with your API key](https://www.mongodb.com/docs/atlas/app-services/realm-cli/v2/#authenticate-with-an-api-key)
-   
-    `appservices login --api-key="<API-Key>" --private-api-key="<Private-Key>"`
-4. Navigate into the folder atlas-backend and import the pm-alert-todo-app application `appservices push --local ./pm-alert-todo-app --remote pm-alert-todo-app` and configure the [options](https://www.mongodb.com/docs/atlas/app-services/manage-apps/create/create-with-cli/#run-the-app-creation-command) according your needs. If you are unsure which options to choose, the default ones are usually a good way to start! 
+Install the necessary dependencies:
+```
+npm install
+```
 
-    After you've chosen your options, you should see the following appear: 
+Start the application:
+```
+node server.js
+```
 
-        App created successfully
-    
-        ...
-    
-        Successfully pushed app up: Your App ID 
-    
-    Your App ID should be in the following format: YourAppName-XXXXX
+The application is now running on port 5003.
 
-
-6. Then, replace `appId` field with your App Services App ID in `atlasConfig` (shown in next step)
-
-### Configuration
-Locate the `atlasConfig` and replace the placeholder values with your actual configuration values.
-
-
-### Run the App
-
-- Open App.xcodeproj in Xcode.
-- Wait for it to download dependencies.
-- Press "Run".
 
 ## Step 8. Run the Demo
 
