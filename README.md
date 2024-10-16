@@ -61,6 +61,34 @@ To integrate Atlas Charts, you will need to create a charts dashboard on MongoDB
 Link the Atlas charts dashboard to machine_failures collection. You can create any widgets you want :)
 We have also included a .charts file in [public](https://github.com/mongodb-industry-solutions/Leafy-Predictive-Maintenance/tree/main/public) folder. You can also use that. Just follow this [tutorial](https://www.mongodb.com/docs/charts/dashboards/dashboard-import-export) on how to import Charts.
 
+## AWS 
+To use the features provided by this project, you will need access to AWS with appropriate permissions. Specifically, we are using two models from Cohere which require requesting access.
+
+### Prerequisites
+- An active AWS account.
+- A user with necessary permissions to access AWS Bedrock.
+- Access to the following Cohere models:
+  - cohere.embed-english-v3 for embeddings.
+  - cohere.command-r-v1:0 for completions.
+
+### Setup
+
+Before you start, make sure you have an active AWS account with the necessary permissions and access to the required Cohere models as mentioned above.
+
+### Environment Variables
+
+You will need to set up your environment variables correctly for this project to function properly. In a file named .env, replace the following placeholders with your own values:
+```
+AWS_REGION=your-aws-region
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+```
+
+### Models Used
+
+We are utilizing AWS Bedrock for two primary functionalities: Embedding and Completion. For these tasks, we have chosen to use the following Cohere models:
+- cohere.embed-english-v3 is used for embedding tasks.
+- cohere.command-r-v1:0 is utilized for completion tasks. 
 
 ## Step 3: Add some Documents in MongoDB
 
