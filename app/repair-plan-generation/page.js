@@ -11,12 +11,14 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf"; // Using legacy build f
 import { H1, H3, H2, Body, Description, Link } from "@leafygreen-ui/typography";
 import Button from "@leafygreen-ui/button";
 import { RadioGroup, Radio } from "@leafygreen-ui/radio-group";
+import ApiSelector from "../_components/apiSelector/ApiSelector";
 
 //pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 export default function Page() {
   const [question, setQuestion] = useState("");
+  const [apiChoice, setApiChoice] = useState("cohere");
   const [isAsked, setIsAsked] = useState(false);
   const [isDocumentsSelected, setIsDocumentsSelected] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
@@ -51,7 +53,12 @@ export default function Page() {
   const handleAsk = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/rag-repair-plan", {
+      const endpoint =
+        apiChoice === "openai"
+          ? "/api/rag-repair-plan-openai-api"
+          : "/api/rag-repair-plan";
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -158,7 +165,12 @@ export default function Page() {
     const answer_pre = answer;
 
     try {
-      const response = await fetch("/api/rag-repair-enhancements", {
+      const endpoint =
+        apiChoice === "openai"
+          ? "/api/rag-repair-enhancements-openai-api"
+          : "/api/rag-repair-enhancements";
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -168,10 +180,6 @@ export default function Page() {
           translatedTextFirstValue,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch answer");
-      }
 
       const data = await response.json();
       setEnhancedResult(data.answer_new);
@@ -210,6 +218,8 @@ export default function Page() {
             system.
           </Body>
         </div>
+
+        <ApiSelector apiChoice={apiChoice} setApiChoice={setApiChoice} />
 
         <div className={styles.sections}>
           <div className={styles.leftSection}>
