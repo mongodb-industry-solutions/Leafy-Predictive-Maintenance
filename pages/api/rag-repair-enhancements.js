@@ -42,8 +42,6 @@ export default async function handler(req, res) {
   }
 
   const { answer_pre, translatedTextFirstValue } = req.body;
-  console.log("previous answer is " + answer_pre);
-  console.log("translated text is " + translatedTextFirstValue);
 
   if (!answer_pre) {
     return res.status(400).json({ message: "Repair plan is required" });
@@ -55,7 +53,6 @@ export default async function handler(req, res) {
     const completion = await generateCompletion(prompt);
     const answer_new = completion.replace("\n", "\n\n");
 
-    console.log("New answer is: " + answer_new);
     res.status(200).json({ answer_new });
   } catch (error) {
     console.error("Error generating answer:", error);
