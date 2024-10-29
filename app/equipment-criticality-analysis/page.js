@@ -15,8 +15,10 @@ import {
   Link,
 } from "@leafygreen-ui/typography";
 import Button from "@leafygreen-ui/button";
+import ApiSelector from "../_components/apiSelector/ApiSelector";
 
 export default function Page() {
+  const [apiChoice, setApiChoice] = useState("cohere");
   const [question, setQuestion] = useState("");
   const [isAsked, setIsAsked] = useState(false);
   const [isDocumentsSelected, setIsDocumentsSelected] = useState(false);
@@ -67,7 +69,12 @@ export default function Page() {
   const handleAsk = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/rag-criticality-analysis", {
+      const endpoint =
+        apiChoice === "openai"
+          ? "/api/rag-criticality-analysis-openai-api"
+          : "/api/rag-criticality-analysis";
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -142,6 +149,7 @@ export default function Page() {
             Select all three docs for best results :){" "}
           </Body>
 
+          <ApiSelector apiChoice={apiChoice} setApiChoice={setApiChoice} />
           <div className={styles.documentsPreviewSection}>
             <div className={styles.checkboxButtonSection}>
               <label>
