@@ -1,95 +1,124 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { MongoClient } from 'mongodb';
-import { OpenAIEmbeddings, ChatOpenAI } from "@langchain/openai";
-import { PromptTemplate } from "@langchain/core/prompts";
-import {HumanMessage} from "@langchain/core/messages";
+import { MongoClient } from "mongodb";
+import {
+  BedrockRuntimeClient,
+  InvokeModelCommand,
+} from "@aws-sdk/client-bedrock-runtime";
 
+const client = new MongoClient(process.env.MONGODB_CONNECTION_STRING);
 
+const bedrockClient = new BedrockRuntimeClient({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
 
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-  const OPENAI_API_MODEL=process.env.OPENAI_API_MODEL;
-  const uri = process.env.MONGODB_CONNECTION_STRING;
-  const dbName=process.env.DATABASE;
-  const collectionName = process.env.MAINTAINENCE_HISTORY_COLLECTION; 
-  const indexName=process.env.CRITICALITY_ANALYSIS_SEARCH_INDEX;
+async function getEmbeddings(texts) {
+  const input = {
+    modelId: "cohere.embed-english-v3",
+    contentType: "application/json",
+    accept: "application/json",
+    body: JSON.stringify({
+      texts,
+      input_type: "search_document",
+    }),
+  };
 
+  const command = new InvokeModelCommand(input);
+  const response = await bedrockClient.send(command);
+  const rawRes = response.body;
 
-  //initialize model and embeddings
-  const model = new ChatOpenAI({
-    apiKey: OPENAI_API_KEY,
-    modelName: OPENAI_API_MODEL,
-  });
-  
-  const embeddings = new OpenAIEmbeddings({
-    apiKey: OPENAI_API_KEY,
-  });
+  const jsonString = new TextDecoder().decode(rawRes);
+  const parsedResponse = JSON.parse(jsonString);
 
+  return parsedResponse.embeddings;
+}
 
+async function generateCompletion(prompt) {
+  const input = {
+    modelId: "cohere.command-r-v1:0",
+    contentType: "application/json",
+    accept: "*/*",
+    body: JSON.stringify({
+      message: prompt,
+      max_tokens: 400,
+      temperature: 0.75,
+      p: 0.01,
+      k: 0,
+      stop_sequences: [],
+    }),
+  };
 
-  // Initialize MongoDB Client
-  const client = new MongoClient(uri);
+  const command = new InvokeModelCommand(input);
+  const response = await bedrockClient.send(command);
+  const rawRes = response.body;
 
-  export default async function handler(req = NextApiRequest, res = NextApiResponse) {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ message: 'Method not allowed' });
-    }
-  
-    let { question, selectedDocuments} = req.body;
-    selectedDocuments = selectedDocuments.map(i => i + '.pdf');
-    console.log(selectedDocuments);
+  const jsonString = new TextDecoder().decode(rawRes);
+  const parsedResponse = JSON.parse(jsonString);
 
-    if (!question || !selectedDocuments) {
-      return res.status(400).json({ message: 'Question and selected documents are required' });
-    }
-  
-    try {
-      // Connect to MongoDB
-      await client.connect();
-      const db = client.db(dbName);
-      const collection = db.collection(collectionName);
-      console.log("connected to MongoDB");
-      console.log(question);
-  
-      // Generate vector embeddings for the question
-      const vector = await embeddings.embedQuery(question);
-     // console.log(vector);
-  
-      // Perform similarity search with Atlas Vector Search
-      const filter = { "source.filename": { $in: selectedDocuments } };
-      //console.log(filter);
-      const results = await collection.aggregate([
-        {
-          "$vectorSearch": {
-            "index": indexName,
-            "path": 'vector_embedding',
-            "queryVector": vector,
-            "numCandidates": 150,
-            "limit": 10,
-            "filter":filter
-          }
+  return parsedResponse.text;
+}
 
-        },
-      ]).toArray();
-      //console.log(results);
-      // Store the sources of data
-      const dataSources = results.map(obj => ({ source: obj.source }));
-      console.log(dataSources);
-      // Create context from search results
-      const context = results.map(result => result.text_chunk).join('\n');
-  
-      // Create prompt with context
-      const prompt = `Given the following context sections, answer the question using only the given context. If you are unsure and the answer is not explicitly written in the documentation, say "Sorry, I don't know how to help with that as I cannot find this information in the docs you provided."\n\nContext:\n${context}\n\nQuestion: ${question}`;
-  
-      // Generate answer from LLM with context
-      const response =  await model.invoke([new HumanMessage({ content: prompt })]);
-
-    // console.log(response);
-
-  
-  
-      const answer = response.content.trim();
-      res.status(200).json({ answer,dataSources });
-    } catch (error) {
-      res.status(500).json({ message: 'Error generating answer', error: error.message });
-    }
+export default async function handler(
+  req = NextApiRequest,
+  res = NextApiResponse
+) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
   }
+
+  let { question, selectedDocuments } = req.body;
+  selectedDocuments = selectedDocuments.map((i) => i + ".pdf");
+
+  if (!question || !selectedDocuments) {
+    return res
+      .status(400)
+      .json({ message: "Question and selected documents are required" });
+  }
+
+  try {
+    await client.connect();
+    const db = client.db(process.env.DATABASE);
+    const collection = db.collection(
+      process.env.MAINTAINENCE_HISTORY_COLLECTION
+    );
+    console.log("Connected to MongoDB");
+
+    const vector = await getEmbeddings([question]);
+
+    const filter = { "source.filename": { $in: selectedDocuments } };
+    const results = await collection
+      .aggregate([
+        {
+          $vectorSearch: {
+            index: process.env.CRITICALITY_ANALYSIS_SEARCH_INDEX,
+            path: "embeddings",
+            queryVector: vector[0],
+            numCandidates: 150,
+            limit: 15,
+            filter: filter,
+          },
+        },
+      ])
+      .toArray();
+
+    const dataSources = results.map((obj) => ({ source: obj.source }));
+
+    const context = results.map((result) => result.text_chunk).join("\n");
+
+    const prompt = `Given the following context sections, answer the question using only the given context. If you are unsure and the answer is not explicitly written in the documentation, say "Sorry, I don't know how to help with that as I cannot find this information in the docs you provided."\n\nContext:\n${context}\n\nQuestion: ${question}`;
+
+    const response = await generateCompletion(prompt);
+
+    const answer = response.trim();
+    res.status(200).json({ answer, dataSources });
+  } catch (error) {
+    console.error("Error in handler:", error);
+    res
+      .status(500)
+      .json({ message: "Error generating answer", error: error.message });
+  } finally {
+    await client.close();
+  }
+}

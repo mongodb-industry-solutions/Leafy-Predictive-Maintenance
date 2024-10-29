@@ -27,8 +27,9 @@ MAINTAINENCE_HISTORY_COLLECTION="your_maintenance_history_collection_name"
 CRITICALITY_ANALYSIS_SEARCH_INDEX="your_criticality_analysis_search_index_name"
 REPAIR_MANUALS_COLLECTION="your_repair_manuals_collection_name"
 REPAIR_PLAN_SEARCH_INDEX="your_repair_plan_search_index_name"
-OPENAI_API_KEY="your_openai_api_key"
-OPENAI_API_MODEL="your_openai_api_model"
+AWS_REGION="your_aws_region"
+AWS_ACCESS_KEY_ID="your_aws_access_key"
+AWS_SECRET_ACCESS_KEY="your_aws_secret_access"
 GCP_TRANSLATE_API_KEY="your_gcp_translate_api_key"
 GCP_PROJECT_ID="your_gcp_project_id"
 NEXT_PUBLIC_APP_IFRAME_SRC="your_iframe_source_url"
@@ -60,6 +61,34 @@ To integrate Atlas Charts, you will need to create a charts dashboard on MongoDB
 Link the Atlas charts dashboard to machine_failures collection. You can create any widgets you want :)
 We have also included a .charts file in [public](https://github.com/mongodb-industry-solutions/Leafy-Predictive-Maintenance/tree/main/public) folder. You can also use that. Just follow this [tutorial](https://www.mongodb.com/docs/charts/dashboards/dashboard-import-export) on how to import Charts.
 
+### AWS 
+To use the features provided by this project, you will need access to AWS with appropriate permissions. Specifically, we are using two models from Cohere which require requesting access.
+
+#### Prerequisites
+- An active AWS account.
+- A user with necessary permissions to access AWS Bedrock.
+- Access to the following Cohere models:
+  - cohere.embed-english-v3 for embeddings.
+  - cohere.command-r-v1:0 for completions.
+
+#### Setup
+
+Before you start, make sure you have an active AWS account with the necessary permissions and access to the required Cohere models as mentioned above.
+
+#### Environment Variables
+
+You will need to set up your environment variables correctly for this project to function properly. In a file named `.env`, replace the following placeholders with your own values:
+```
+AWS_REGION=your-aws-region
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+```
+
+#### Models Used
+
+We are utilizing AWS Bedrock for two primary functionalities: Embedding and Completion. For these tasks, we have chosen to use the following Cohere models:
+- cohere.embed-english-v3 is used for embedding tasks.
+- cohere.command-r-v1:0 is utilized for completion tasks. 
 
 ## Step 3: Add some Documents in MongoDB
 
@@ -79,10 +108,10 @@ Paste the following index definition in the edit box:
 {
   "fields": [
     {
-      "type": "vector",
-      "path": "vector_embedding",
-      "numDimensions": 1536,
-      "similarity": "euclidean"
+      "numDimensions": 1024,
+      "path": "embeddings",
+      "similarity": "euclidean",
+      "type": "vector"
     }
   ]
 }
@@ -98,8 +127,8 @@ Follow the same steps to create one more index:
 {
   "fields": [
     {
-      "numDimensions": 1536,
-      "path": "vector_embedding",
+      "numDimensions": 1024,
+      "path": "embeddings",
       "similarity": "euclidean",
       "type": "vector"
     },
@@ -129,42 +158,31 @@ This script performs automated predictive maintenance using MongoDB and a pre-tr
 2. Use the pipeline in ```ASP/ASP Pipeline``` file for the stream processor
 3. Make sure to setup your source and sink collections as listed in the Pipeline
 
-## Step 7. Run the Mobile App
-### App Services
+## Step 7. Run Alerts app
 
-First, you'll need to create the App Services App. 
+Navigate to the alerts-app directory:
+```
+cd alerts-app
+```
 
-#### Setup App Services CLI
+Create a .env file with the following content:
+```
+MONGODB_CONNECTION_STRING="your_mongodb_uri"
+DATABASE="your_mongodb_database"
+```
 
-1. [Install appservice-cli](https://www.mongodb.com/docs/atlas/app-services/cli/#app-services-cli)
-2. [Generate API key](https://www.mongodb.com/docs/atlas/app-services/cli/#generate-an-api-key), assign the ```Project Owner``` permission and add your IP address to the access list
-3. [Login with your API key](https://www.mongodb.com/docs/atlas/app-services/realm-cli/v2/#authenticate-with-an-api-key)
-   
-    `appservices login --api-key="<API-Key>" --private-api-key="<Private-Key>"`
-4. Navigate into the folder atlas-backend and import the pm-alert-todo-app application `appservices push --local ./pm-alert-todo-app --remote pm-alert-todo-app` and configure the [options](https://www.mongodb.com/docs/atlas/app-services/manage-apps/create/create-with-cli/#run-the-app-creation-command) according your needs. If you are unsure which options to choose, the default ones are usually a good way to start! 
+Install the necessary dependencies:
+```
+npm install
+```
 
-    After you've chosen your options, you should see the following appear: 
+Start the application:
+```
+node server.js
+```
 
-        App created successfully
-    
-        ...
-    
-        Successfully pushed app up: Your App ID 
-    
-    Your App ID should be in the following format: YourAppName-XXXXX
+The application is now running on port 5003.
 
-
-6. Then, replace `appId` field with your App Services App ID in `atlasConfig` (shown in next step)
-
-### Configuration
-Locate the `atlasConfig` and replace the placeholder values with your actual configuration values.
-
-
-### Run the App
-
-- Open App.xcodeproj in Xcode.
-- Wait for it to download dependencies.
-- Press "Run".
 
 ## Step 8. Run the Demo
 
