@@ -19,14 +19,19 @@ To run this project, you will need to create a `.env` file in the root directory
 ```env
 MONGODB_CONNECTION_STRING="your_mongodb_connection_string"
 DATABASE="your_database_name"
+DATABASE_OPEN_AI="your_database_name_for_open_ai"
 FAILURES_COLLECTION="your_failures_collection_name"
 RAW_DATA_COLLECTION="your_raw_data_collection_name"
 TRANSFORMED_DATA_COLLECTION="your_transformed_data_collection_name"
 MODELS_COLLECTION="your_models_collection_name"
 MAINTAINENCE_HISTORY_COLLECTION="your_maintenance_history_collection_name"
 CRITICALITY_ANALYSIS_SEARCH_INDEX="your_criticality_analysis_search_index_name"
+CRITICALITY_ANALYSIS_SEARCH_INDEX_OPEN_AI="your_criticality_analysis_search_index_name_for_open_ai"
 REPAIR_MANUALS_COLLECTION="your_repair_manuals_collection_name"
 REPAIR_PLAN_SEARCH_INDEX="your_repair_plan_search_index_name"
+REPAIR_PLAN_SEARCH_INDEX_OPEN_AI="your_repair_plan_search_index_name_for_open_ai"
+OPENAI_API_KEY="your_open_ai_api_key"
+OPENAI_API_MODEL="open_ai_model_name"
 AWS_REGION="your_aws_region"
 AWS_ACCESS_KEY_ID="your_aws_access_key"
 AWS_SECRET_ACCESS_KEY="your_aws_secret_access"
@@ -34,6 +39,7 @@ GCP_TRANSLATE_API_KEY="your_gcp_translate_api_key"
 GCP_PROJECT_ID="your_gcp_project_id"
 NEXT_PUBLIC_APP_IFRAME_SRC="your_iframe_source_url"
 ```
+
 Replace the placeholder values with your actual configuration values. Some of the collections you will import in step 3.
 
 Recommended names for collections are listed below. 
@@ -46,8 +52,6 @@ MODELS_COLLECTION="ml_models"
 MAINTAINENCE_HISTORY_COLLECTION="maintenance_history"
 REPAIR_MANUALS_COLLECTION="repair_manuals"
 ```
-
-
 
 ### Getting a GCP Translate API Key
 You can create a free account and get a GCP Translate API key by following the [Google Cloud Platform's](https://cloud.google.com/gcp?utm_source=google&utm_medium=cpc&utm_campaign=emea-es-all-en-bkws-all-all-trial-e-gcp-1707574&utm_content=text-ad-none-any-DEV_c-CRE_500236788678-ADGP_Hybrid+%7C+BKWS+-+EXA+%7C+Txt+-+GCP+-+General+-+v3-KWID_43700060384861657-kwd-26415313501-userloc_1005424&utm_term=KW_google+cloud+platform-NET_g-PLAC_&&gad_source=1&gclid=CjwKCAjwp4m0BhBAEiwAsdc4aGWrFtSlO6P2himmtN7pEC2GGWxFBc7i-RD4vcuqTNRFur8u7w_RCxoCNEsQAvD_BwE&gclsrc=aw.ds&hl=en) instructions.
@@ -89,6 +93,23 @@ AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
 We are utilizing AWS Bedrock for two primary functionalities: Embedding and Completion. For these tasks, we have chosen to use the following Cohere models:
 - cohere.embed-english-v3 is used for embedding tasks.
 - cohere.command-r-v1:0 is utilized for completion tasks. 
+
+### OpenAI Integration
+
+To use OpenAI’s features within this project, you will need an OpenAI API key and model name. Follow these steps to set up and configure OpenAI alongside the existing Cohere API integration.
+
+#### Prerequisites
+1. **OpenAI Account**: Sign up for an OpenAI account at [https://platform.openai.com/](https://platform.openai.com/).
+2. **API Access**: Obtain an API key by navigating to your [API Keys page](https://platform.openai.com/account/api-keys).
+3. **Model Selection**: Choose the OpenAI model you wish to use (e.g., `gpt-3.5-turbo`, `gpt-4`). 
+
+#### Environment Variables
+Add the following variables to your `.env` file:
+
+```dotenv
+OPENAI_API_KEY="your_open_ai_api_key"
+OPENAI_API_MODEL="your_open_ai_model_name" # e.g., gpt-4
+```
 
 ## Step 3: Add some Documents in MongoDB
 
