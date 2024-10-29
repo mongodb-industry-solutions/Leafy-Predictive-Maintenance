@@ -1,4 +1,4 @@
-import styles from "./ApiSelector.module.css";
+import styles from "./apiSelector.module.css";
 
 const ApiSelector = ({ apiChoice, setApiChoice }) => {
   const handleSelection = (event) => {
