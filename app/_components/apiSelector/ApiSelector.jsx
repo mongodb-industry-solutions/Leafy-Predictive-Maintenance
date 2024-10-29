@@ -14,8 +14,8 @@ const ApiSelector = ({ apiChoice, setApiChoice }) => {
           onChange={handleSelection}
           className={styles.select}
         >
-          <option value="openai">OpenAI</option>
           <option value="cohere">Cohere</option>
+          <option value="openai">OpenAI</option>
         </select>
       </label>
     </div>
