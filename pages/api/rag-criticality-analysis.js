@@ -70,7 +70,6 @@ export default async function handler(
 
   let { question, selectedDocuments } = req.body;
   selectedDocuments = selectedDocuments.map((i) => i + ".pdf");
-  console.log(selectedDocuments);
 
   if (!question || !selectedDocuments) {
     return res
@@ -105,7 +104,6 @@ export default async function handler(
       .toArray();
 
     const dataSources = results.map((obj) => ({ source: obj.source }));
-    console.log(dataSources);
 
     const context = results.map((result) => result.text_chunk).join("\n");
 
