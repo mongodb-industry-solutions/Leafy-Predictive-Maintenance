@@ -1,14 +1,13 @@
 services:
-  predictive-maintenance-hosted:
+  frontend:
     build:
       context: ./
       dockerfile: Dockerfile
-    image: predictive-maintenance-hosted:latest
+    image: predictive-maintenance-frontend:latest
     ports:
       - "3000:3000"
     restart: always
-    container_name: predictive-maintenance-hosted
-
+    container_name: predictive-maintenance-frontend
   alerts-app:
     build:
       context: ./alerts-app/
@@ -18,3 +17,10 @@ services:
       - "5003:5003"
     restart: always
     container_name: alerts-app
+  inference-service:
+    build:
+      context: ./app/python/
+      dockerfile: Dockerfile
+    image: inference-service:latest
+    restart: always
+    container_name: inference-service
