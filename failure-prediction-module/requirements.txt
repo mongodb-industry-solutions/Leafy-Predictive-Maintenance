@@ -1,0 +1,5 @@
+blosc
+pandas
+scikit-learn
+python-dotenv
+pymongo
