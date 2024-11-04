@@ -8,7 +8,7 @@ const ApiSelector = ({ apiChoice, setApiChoice }) => {
   return (
     <div className={styles.container}>
       <label className={styles.label}>
-        Choose API:
+      Select your AI Provider
         <select
           value={apiChoice}
           onChange={handleSelection}

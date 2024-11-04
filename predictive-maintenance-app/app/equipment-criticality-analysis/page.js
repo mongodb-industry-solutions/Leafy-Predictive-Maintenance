@@ -142,6 +142,9 @@ export default function Page() {
         </div>
 
         <div className={styles.selectDocumentsSection}>
+
+          <ApiSelector apiChoice={apiChoice} setApiChoice={setApiChoice} />
+
           <h3>Select the Documents for Analysis</h3>
 
           <Body className={styles.hint}>
@@ -149,7 +152,7 @@ export default function Page() {
             Select all three docs for best results :){" "}
           </Body>
 
-          <ApiSelector apiChoice={apiChoice} setApiChoice={setApiChoice} />
+
           <div className={styles.documentsPreviewSection}>
             <div className={styles.checkboxButtonSection}>
               <label>

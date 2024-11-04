@@ -9,6 +9,7 @@ display: flex;
     display: flex;
     width: 100%;
     justify-content: space-between;
+    margin-top: 50px;
 }
 
 .pageInfo{
