@@ -1,3 +1,5 @@
 node_modules
-alerts-app
 .next
+npm-debug.log
+docker/
+.DS_Store
