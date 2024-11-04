@@ -1,8 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-/.pnp
+**/node_modules
+**/.pnp
 .pnp.js
 .yarn/install-state.gz
 
@@ -10,11 +10,11 @@
 /coverage
 
 # next.js
-/.next/
+**/.next/
 /out/
 
 # production
-/build
+**/build
 
 # misc
 .DS_Store
@@ -27,7 +27,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
-.env
+*.env*
 
 # vercel
 .vercel
@@ -48,3 +48,17 @@ run-python-inference-engine.js
 
 
 todo.txt
+
+# Python
+.venv
+*.ipynb
+
+# Stream processors
+**/stream-processors/sp_*
+
+# MongoDB extensions
+*mongodb.js
+
+# Deployment
+docker-compose-ecs.yml
+ecs-params.yml
