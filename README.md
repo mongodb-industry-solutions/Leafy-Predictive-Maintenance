@@ -9,8 +9,8 @@ Discover how these tools streamline maintenance processes and optimize machine p
 
 ## Step 1: Create a MongoDB Atlas Instance
 
-1. Create a MongoDB Atlas instance if you don't already have one. Our recommended name for cluster is "Smart-Factory-Cluster". You can choose your own name but please make sure to update the name in step 7 (app services setup)
-2. Create a database and some collections. Our recommended name for database is "smart_factory". You can choose your own name but please make sure to update the name in step 7 (app services setup)
+1. Create a MongoDB Atlas instance if you don't already have one. Our recommended name for cluster is "Smart-Factory-Cluster". 
+2. Create a database and some collections. Our recommended name for database is "smart_factory". 
 
 ## Step 2. Configure Environment Variables
 
