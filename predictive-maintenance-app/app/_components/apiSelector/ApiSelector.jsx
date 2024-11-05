@@ -8,14 +8,14 @@ const ApiSelector = ({ apiChoice, setApiChoice }) => {
   return (
     <div className={styles.container}>
       <label className={styles.label}>
-      Select your AI Provider
+        Select your AI Provider
         <select
           value={apiChoice}
           onChange={handleSelection}
           className={styles.select}
         >
           <option value="cohere">Cohere</option>
-          <option value="openai">OpenAI</option>
+          {/* <option value="openai">OpenAI</option> */}
         </select>
       </label>
     </div>
