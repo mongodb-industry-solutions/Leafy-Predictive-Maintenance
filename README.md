@@ -19,7 +19,6 @@ To run this project, you will need to create a `.env` file in the root directory
 ```env
 MONGODB_CONNECTION_STRING="your_mongodb_connection_string"
 DATABASE="your_database_name"
-DATABASE_OPEN_AI="your_database_name_for_open_ai"
 FAILURES_COLLECTION="your_failures_collection_name"
 RAW_DATA_COLLECTION="your_raw_data_collection_name"
 TRANSFORMED_DATA_COLLECTION="your_transformed_data_collection_name"

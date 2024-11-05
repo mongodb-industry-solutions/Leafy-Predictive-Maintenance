@@ -73,7 +73,7 @@ export default async function handler(req, res) {
 
   try {
     await client.connect();
-    const db = client.db(process.env.DATABASE_COHERE);
+    const db = client.db(process.env.DATABASE);
     const collection = db.collection(process.env.REPAIR_MANUALS_COLLECTION);
     console.log("Connected to MongoDB");
 

@@ -79,7 +79,7 @@ export default async function handler(
 
   try {
     await client.connect();
-    const db = client.db(process.env.DATABASE_COHERE);
+    const db = client.db(process.env.DATABASE);
     const collection = db.collection(
       process.env.MAINTAINENCE_HISTORY_COLLECTION
     );
