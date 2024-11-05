@@ -70,8 +70,26 @@ async function watchAlerts() {
 
 // API to get alerts
 app.get("/api/alerts", async (req, res) => {
-  res.json(alerts);
-  alerts.length = 0;
+  try {
+    const db = client.db(dbName);
+    const collection = db.collection("machine_failures");
+
+    const alertsFromDB = await collection.find({}).toArray();
+
+    const formattedAlerts = alertsFromDB.map((alert) => ({
+      _id: alert._id.toString(),
+      failure: alert.failure,
+      machineID: alert.machineID,
+      ts: alert.ts.toDateString(),
+      isAcknowledged: alert.isAcknowledged,
+      repairSteps: alert.repairSteps,
+    }));
+
+    res.json(formattedAlerts);
+  } catch (error) {
+    console.error("Error fetching alerts:", error);
+    res.status(500).send("Failed to fetch alerts");
+  }
 });
 
 // API to acknowledge an alert
