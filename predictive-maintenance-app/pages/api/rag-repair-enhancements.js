@@ -1,9 +1,7 @@
-import {
-  BedrockRuntimeClient,
-  InvokeModelCommand,
-} from "@aws-sdk/client-bedrock-runtime";
+import { BedrockChat } from "@langchain/community/chat_models/bedrock";
 
-const bedrockClient = new BedrockRuntimeClient({
+const llm = new BedrockChat({
+  model: "cohere.command-r-v1:0",
   region: process.env.AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -12,28 +10,21 @@ const bedrockClient = new BedrockRuntimeClient({
 });
 
 async function generateCompletion(prompt) {
-  const input = {
-    modelId: "cohere.command-r-v1:0",
-    contentType: "application/json",
-    accept: "*/*",
-    body: JSON.stringify({
-      message: prompt,
-      max_tokens: 400,
-      temperature: 0.75,
-      p: 0.01,
-      k: 0,
-      stop_sequences: [],
-    }),
-  };
+  try {
+    const conversation = [
+      ["system", "You are a helpful assistant."],
+      ["human", prompt],
+    ];
 
-  const command = new InvokeModelCommand(input);
-  const response = await bedrockClient.send(command);
-  const rawRes = response.body;
+    const aiMessage = await llm.invoke(conversation);
+    console.log(aiMessage);
 
-  const jsonString = new TextDecoder().decode(rawRes);
-  const parsedResponse = JSON.parse(jsonString);
-
-  return parsedResponse.text;
+    const response = aiMessage.content.trim();
+    return response;
+  } catch (error) {
+    console.error("Error generating completion:", error);
+    throw new Error("Failed to generate completion");
+  }
 }
 
 export default async function handler(req, res) {
