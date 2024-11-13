@@ -17,7 +17,6 @@ async function generateCompletion(prompt) {
     ];
 
     const aiMessage = await llm.invoke(conversation);
-    console.log(aiMessage);
 
     const response = aiMessage.content.trim();
     return response;
