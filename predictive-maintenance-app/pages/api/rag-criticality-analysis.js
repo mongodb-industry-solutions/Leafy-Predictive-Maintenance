@@ -3,6 +3,7 @@ import {
   BedrockRuntimeClient,
   InvokeModelCommand,
 } from "@aws-sdk/client-bedrock-runtime";
+import { BedrockChat } from "@langchain/community/chat_models/bedrock";
 
 const client = new MongoClient(process.env.MONGODB_CONNECTION_STRING);
 
@@ -35,29 +36,31 @@ async function getEmbeddings(texts) {
   return parsedResponse.embeddings;
 }
 
+const llm = new BedrockChat({
+  model: "cohere.command-r-v1:0",
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
 async function generateCompletion(prompt) {
-  const input = {
-    modelId: "cohere.command-r-v1:0",
-    contentType: "application/json",
-    accept: "*/*",
-    body: JSON.stringify({
-      message: prompt,
-      max_tokens: 400,
-      temperature: 0.75,
-      p: 0.01,
-      k: 0,
-      stop_sequences: [],
-    }),
-  };
+  try {
+    const conversation = [
+      ["system", "You are a helpful assistant."],
+      ["human", prompt],
+    ];
 
-  const command = new InvokeModelCommand(input);
-  const response = await bedrockClient.send(command);
-  const rawRes = response.body;
+    const aiMessage = await llm.invoke(conversation);
+    console.log(aiMessage);
 
-  const jsonString = new TextDecoder().decode(rawRes);
-  const parsedResponse = JSON.parse(jsonString);
-
-  return parsedResponse.text;
+    const response = aiMessage.content.trim();
+    return response;
+  } catch (error) {
+    console.error("Error generating completion:", error);
+    throw new Error("Failed to generate completion");
+  }
 }
 
 export default async function handler(
@@ -69,6 +72,7 @@ export default async function handler(
   }
 
   let { question, selectedDocuments } = req.body;
+
   selectedDocuments = selectedDocuments.map((i) => i + ".pdf");
 
   if (!question || !selectedDocuments) {
@@ -83,11 +87,13 @@ export default async function handler(
     const collection = db.collection(
       process.env.MAINTAINENCE_HISTORY_COLLECTION
     );
+
     console.log("Connected to MongoDB");
 
     const vector = await getEmbeddings([question]);
 
     const filter = { "source.filename": { $in: selectedDocuments } };
+
     const results = await collection
       .aggregate([
         {
@@ -104,7 +110,6 @@ export default async function handler(
       .toArray();
 
     const dataSources = results.map((obj) => ({ source: obj.source }));
-
     const context = results.map((result) => result.text_chunk).join("\n");
 
     const prompt = `Given the following context sections, answer the question using only the given context. If you are unsure and the answer is not explicitly written in the documentation, say "Sorry, I don't know how to help with that as I cannot find this information in the docs you provided."\n\nContext:\n${context}\n\nQuestion: ${question}`;
