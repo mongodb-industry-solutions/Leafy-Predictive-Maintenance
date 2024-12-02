@@ -1,65 +1,96 @@
 import { MongoClient } from "mongodb";
+import { OpenAIEmbeddings, ChatOpenAI } from "@langchain/openai";
+import { HumanMessage } from "@langchain/core/messages";
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
 } from "@aws-sdk/client-bedrock-runtime";
 import { BedrockChat } from "@langchain/community/chat_models/bedrock";
 
-const client = new MongoClient(process.env.MONGODB_CONNECTION_STRING);
+const AI_MODEL_PROVIDER = process.env.AI_MODEL_PROVIDER;
+const uri = process.env.MONGODB_CONNECTION_STRING;
+const dbName = process.env.DATABASE;
+const collectionName = process.env.REPAIR_MANUALS_COLLECTION;
+const indexNameOpenAI = process.env.REPAIR_PLAN_SEARCH_INDEX_OPEN_AI;
+const indexNameCohere = process.env.REPAIR_PLAN_SEARCH_INDEX;
 
-const bedrockClient = new BedrockRuntimeClient({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-});
+const client = new MongoClient(uri);
 
-async function getEmbeddings(texts) {
-  const input = {
-    modelId: "cohere.embed-english-v3",
-    contentType: "application/json",
-    accept: "application/json",
-    body: JSON.stringify({
-      texts,
-      input_type: "search_document",
-    }),
+let model, embeddings, getEmbeddings, generateCompletion;
+
+if (AI_MODEL_PROVIDER === "openai") {
+  console.log("Using OpenAI");
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  const OPENAI_API_MODEL = process.env.OPENAI_API_MODEL;
+
+  model = new ChatOpenAI({
+    apiKey: OPENAI_API_KEY,
+    modelName: OPENAI_API_MODEL,
+  });
+
+  embeddings = new OpenAIEmbeddings({
+    apiKey: OPENAI_API_KEY,
+  });
+
+  getEmbeddings = async (texts) => {
+    return await embeddings.embedQuery(texts[0]);
   };
 
-  const command = new InvokeModelCommand(input);
-  const response = await bedrockClient.send(command);
-  const rawRes = response.body;
+  generateCompletion = async (prompt) => {
+    const response = await model.invoke([
+      new HumanMessage({ content: prompt }),
+    ]);
+    return response.content.trim();
+  };
+} else if (AI_MODEL_PROVIDER === "cohere") {
+  console.log("Using Cohere");
+  const bedrockClient = new BedrockRuntimeClient({
+    region: process.env.AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  });
 
-  const jsonString = new TextDecoder().decode(rawRes);
-  const parsedResponse = JSON.parse(jsonString);
+  getEmbeddings = async (texts) => {
+    const input = {
+      modelId: "cohere.embed-english-v3",
+      contentType: "application/json",
+      accept: "application/json",
+      body: JSON.stringify({
+        texts,
+        input_type: "search_document",
+      }),
+    };
 
-  return parsedResponse.embeddings;
-}
+    const command = new InvokeModelCommand(input);
+    const response = await bedrockClient.send(command);
+    const rawRes = response.body;
 
-const llm = new BedrockChat({
-  model: "cohere.command-r-v1:0",
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-});
+    const jsonString = new TextDecoder().decode(rawRes);
+    const parsedResponse = JSON.parse(jsonString);
 
-async function generateCompletion(prompt) {
-  try {
+    return parsedResponse.embeddings;
+  };
+
+  const llm = new BedrockChat({
+    model: "cohere.command-r-v1:0",
+    region: process.env.AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  });
+
+  generateCompletion = async (prompt) => {
     const conversation = [
       ["system", "You are a helpful assistant."],
       ["human", prompt],
     ];
 
     const aiMessage = await llm.invoke(conversation);
-
-    const response = aiMessage.content.trim();
-    return response;
-  } catch (error) {
-    console.error("Error generating completion:", error);
-    throw new Error("Failed to generate completion");
-  }
+    return aiMessage.content.trim();
+  };
 }
 
 export default async function handler(req, res) {
@@ -75,39 +106,39 @@ export default async function handler(req, res) {
 
   try {
     await client.connect();
-    const db = client.db(process.env.DATABASE);
-    const collection = db.collection(process.env.REPAIR_MANUALS_COLLECTION);
+    const db = client.db(dbName);
+    const collection = db.collection(collectionName);
     console.log("Connected to MongoDB");
 
     const vector = await getEmbeddings([question]);
-    //console.log("Generated vector:", vector);
+
+    const indexName =
+      AI_MODEL_PROVIDER === "openai" ? indexNameOpenAI : indexNameCohere;
+    const path =
+      AI_MODEL_PROVIDER === "openai" ? "embeddings_openai" : "embeddings";
+    const queryVectorMongo =
+      AI_MODEL_PROVIDER === "openai" ? vector : vector[0];
 
     const results = await collection
       .aggregate([
         {
           $vectorSearch: {
-            index: process.env.REPAIR_PLAN_SEARCH_INDEX,
-            path: "embeddings",
-            queryVector: vector[0],
+            index: indexName,
+            path: path,
+            queryVector: queryVectorMongo,
             numCandidates: 150,
-            limit: 15,
+            limit: 10,
           },
         },
       ])
       .toArray();
 
-    //console.log("Results from MongoDB:", results);
-
     const dataSources = results.map((obj) => ({ source: obj.source }));
-    //console.log(dataSources);
     const context = results.map((result) => result.text_chunk).join("\n");
-    //console.log(context);
 
     const prompt = `Given the following context sections, answer the question using only the given context. If you are unsure and the answer is not explicitly written in the documentation, say "Sorry, I don't know how to help with that as I cannot find this information in the docs you provided." Adding to the question, also provide who will do the repair and which spare parts will be used and how long this repair will take based on old work orders info.\n\nContext:\n${context}\n\nQuestion: ${question}`;
 
-    const completion = await generateCompletion(prompt);
-    const answer = completion.replace("\n", "\n\n");
-
+    const answer = await generateCompletion(prompt);
     res.status(200).json({ answer, dataSources });
   } catch (error) {
     console.error("Error in handler:", error);
