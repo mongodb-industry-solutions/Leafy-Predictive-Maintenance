@@ -1,29 +1,47 @@
+import { OpenAIEmbeddings, ChatOpenAI } from "@langchain/openai";
+import { HumanMessage } from "@langchain/core/messages";
 import { BedrockChat } from "@langchain/community/chat_models/bedrock";
 
-const llm = new BedrockChat({
-  model: "cohere.command-r-v1:0",
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-});
+const AI_MODEL_PROVIDER = process.env.AI_MODEL_PROVIDER;
 
-async function generateCompletion(prompt) {
-  try {
+let model, generateCompletion;
+
+if (AI_MODEL_PROVIDER === "openai") {
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  const OPENAI_API_MODEL = process.env.OPENAI_API_MODEL;
+  console.log("Using OpenAI");
+
+  model = new ChatOpenAI({
+    apiKey: OPENAI_API_KEY,
+    modelName: OPENAI_API_MODEL,
+  });
+
+  generateCompletion = async (prompt) => {
+    const response = await model.invoke([
+      new HumanMessage({ content: prompt }),
+    ]);
+    return response.content.trim();
+  };
+} else if (AI_MODEL_PROVIDER === "cohere") {
+  console.log("Using Cohere");
+  const llm = new BedrockChat({
+    model: "cohere.command-r-v1:0",
+    region: process.env.AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  });
+
+  generateCompletion = async (prompt) => {
     const conversation = [
       ["system", "You are a helpful assistant."],
       ["human", prompt],
     ];
 
     const aiMessage = await llm.invoke(conversation);
-
-    const response = aiMessage.content.trim();
-    return response;
-  } catch (error) {
-    console.error("Error generating completion:", error);
-    throw new Error("Failed to generate completion");
-  }
+    return aiMessage.content.trim();
+  };
 }
 
 export default async function handler(req, res) {
@@ -40,9 +58,7 @@ export default async function handler(req, res) {
   try {
     const prompt = `Update the repair plan using the points mentioned in the service notes. Both repair plan and service notes are provided in the context.\n\nContext:\nRepair plan: ${answer_pre}\nService notes: ${translatedTextFirstValue}`;
 
-    const completion = await generateCompletion(prompt);
-    const answer_new = completion.replace("\n", "\n\n");
-
+    const answer_new = await generateCompletion(prompt);
     res.status(200).json({ answer_new });
   } catch (error) {
     console.error("Error generating answer:", error);
