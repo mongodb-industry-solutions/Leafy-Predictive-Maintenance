@@ -197,7 +197,7 @@ This script performs automated predictive maintenance using MongoDB and a pre-tr
 ## Step 6. Atlas Stream Processing Setup
 
 1. Setup Atlas Stream Processing using this tutorial https://www.mongodb.com/docs/atlas/atlas-stream-processing/tutorial/
-2. Use the pipeline in ```[predictive-maintenance-app/ASP/ASP Pipeline](https://github.com/mongodb-industry-solutions/Leafy-Predictive-Maintenance/tree/main/mongodb-utils/stream-processors)``` folder for the stream processor
+2. Use the pipeline in [predictive-maintenance-app/ASP/ASP Pipeline](https://github.com/mongodb-industry-solutions/Leafy-Predictive-Maintenance/blob/main/predictive-maintenance-app/ASP/ASP%20Pipeline) folder for the stream processor
 3. Make sure to setup your source and sink collections as listed in the Pipeline
 
 ## Step 7. Run Alerts app
@@ -227,6 +227,11 @@ The application is now running on port 5003.
 
 
 ## Step 8. Run the Demo
+
+### Go to the predictive maintenance app folder
+```
+cd predictive-maintenance-app
+```
 
 ### Install Dependencies
 
