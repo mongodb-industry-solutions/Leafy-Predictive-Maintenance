@@ -121,9 +121,6 @@ OPENAI_API_MODEL="your_open_ai_model_name" # e.g., gpt-4
 
 Import the documents provided [here](https://github.com/mongodb-industry-solutions/Leafy-Predictive-Maintenance/tree/main/predictive-maintenance-app/collections) into Atlas. These include different PDFs (maintenance history document, maintenance instructions and repair plans) that will be used for retrieval-augmented generation in the demo.
 
-> **_NOTE:_** These pre-embedded documents will work only if you choose for OpenAI models as they are using embeddings of 1536 dimensions. You can chose to create your own embeddings with your own documents but make sure you name the collections in a similar fashion.
-
-
 The application setup is not finished. Now that you've uploaded the chunks and embeddings with metadata in MongoDB, in order to perform searches, you will need to create the index.
 
 ## Step 4: Create a Vector Search Index in MongoDB Atlas
