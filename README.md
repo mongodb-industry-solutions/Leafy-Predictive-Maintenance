@@ -48,7 +48,7 @@ Replace the placeholder values with your actual configuration values. Some of th
 > **_NOTE:_** The `AI_MODEL_PROVIDER` variable determines which AI model provider is used by the application. It can be set to either `openai` or `cohere`. Ensure that the necessary API keys and configurations for the selected provider are correctly set in your environment variables.
 
 Recommended names for collections are listed below. 
-```
+```dotenv
 DATABASE="smart_factory"
 FAILURES_COLLECTION="machine_failures"
 RAW_DATA_COLLECTION="raw_data"
@@ -88,7 +88,7 @@ Before you start, make sure you have an active AWS account with the necessary pe
 #### Environment Variables
 
 You will need to set up your environment variables correctly for this project to function properly. In a file named `.env`, replace the following placeholders with your own values:
-```
+```dotenv
 AWS_REGION=your-aws-region
 AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
