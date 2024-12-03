@@ -118,7 +118,7 @@ OPENAI_API_MODEL="your_open_ai_model_name" # e.g., gpt-4
 
 ## Step 3: Add some Documents in MongoDB
 
-Import the documents provided [here](https://github.com/mongodb-industry-solutions/Leafy-Predictive-Maintenance/tree/main/collections) into Atlas. These include different PDFs (maintenance history document, maintenance instructions and repair plans) that will be used for retrieval-augmented generation in the demo.
+Import the documents provided [here](https://github.com/mongodb-industry-solutions/Leafy-Predictive-Maintenance/tree/main/predictive-maintenance-app/collections) into Atlas. These include different PDFs (maintenance history document, maintenance instructions and repair plans) that will be used for retrieval-augmented generation in the demo.
 
 The application setup is not finished. Now that you've uploaded the chunks and embeddings with metadata in MongoDB, in order to perform searches, you will need to create the index.
 
@@ -238,7 +238,6 @@ npm run dev
 Use a browser to open the link http://localhost:3000/
 
 Take a look at this [youtube video](https://www.youtube.com/watch?v=YwTWpUl3QS8) to understand how the demo works or read this [white paper](https://www.mongodb.com/resources/solutions/use-cases/generative-ai-predictive-maintenance-applications) and [blog](https://www.mongodb.com/blog/post/building-gen-ai-powered-predictive-maintenance-mongodb) for more explanation.
-
 
 
 ## Running It with Docker
