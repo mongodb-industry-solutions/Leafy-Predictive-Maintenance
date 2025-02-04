@@ -7,11 +7,13 @@ function App() {
   const [alerts, setAlerts] = useState([]);
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const SERVER_URL =
+    process.env.REACT_APP_SERVER_URL || "http://localhost:5003";
 
   useEffect(() => {
     fetchAlerts();
     // Setup WebSocket connection
-    const socket = socketIOClient("http://localhost:5003");
+    const socket = socketIOClient(SERVER_URL);
 
     // Listen for alert updates
     socket.on("alertUpdate", (updatedAlerts) => {
@@ -25,7 +27,7 @@ function App() {
 
   const fetchAlerts = async () => {
     try {
-      const response = await axios.get("http://localhost:5003/api/alerts");
+      const response = await axios.get(`${SERVER_URL}/api/alerts`);
       console.log(response.data);
       setAlerts(response.data);
     } catch (error) {
@@ -44,7 +46,7 @@ function App() {
 
   const acknowledgeAlert = async (id) => {
     try {
-      await axios.post(`http://localhost:5003/api/alerts/acknowledge/${id}`);
+      await axios.post(`${SERVER_URL}/api/alerts/acknowledge/${id}`);
       fetchAlerts();
       handleCloseModal();
     } catch (error) {
