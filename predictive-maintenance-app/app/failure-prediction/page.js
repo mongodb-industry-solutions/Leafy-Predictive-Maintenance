@@ -121,7 +121,7 @@ export default function Page() {
             from sensors, processes it through Atlas Stream Processing, and uses
             machine learning models to predict failures. Results are stored in
             MongoDB Atlas, visualized using Atlas Charts, and alerts are pushed
-            to mobile devices via Atlas Device Sync. This streamlined workflow
+            to mobile devices via Change Streams. This streamlined workflow
             optimizes machine performance and minimizes downtime, providing a
             comprehensive, end-to-end solution for predictive maintenance.
           </Body>
