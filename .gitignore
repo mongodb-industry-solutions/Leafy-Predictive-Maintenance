@@ -62,3 +62,5 @@ todo.txt
 # Deployment
 docker-compose-ecs.yml
 ecs-params.yml
+policy.json
+Makefile
