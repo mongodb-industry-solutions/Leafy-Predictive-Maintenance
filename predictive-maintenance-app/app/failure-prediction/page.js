@@ -42,6 +42,9 @@ export default function Page() {
     if (isMachineRunning) {
       // If already running, issue a stop request
       await fetch('/api/machine-simulator', { method: 'POST' });
+    } else {
+      // When starting the machine, initialize the chart immediately
+      setChartReady(true);
     }
     setIsMachineRunning((prev) => !prev);
   };
@@ -51,10 +54,7 @@ export default function Page() {
    */
   useEffect(() => {
     let eventSource;
-    // If starting the simulation, set the chart to ready immediately.
-    if (!isMachineRunning) {
-      setChartReady(true);
-    }
+
     if (isMachineRunning) {
       eventSource = new EventSource('/api/machine-simulator');
 
@@ -95,13 +95,82 @@ export default function Page() {
         eventSource.close();
       }
     };
-  }, [isMachineRunning, chartReady]);
+  }, [isMachineRunning]);
+
+  /**
+   * Initialize the chart when chartReady is set to true
+   * (happens immediately when "Run Machine" button is clicked)
+   */
+  useEffect(() => {
+    if (chartReady && !chartInstance && chartContainerRef.current) {
+      // Add detailed logging of the base URL to debug
+      console.log('Charts base URL:', chartsBaseUrl);
+
+      // Make sure the URL is valid before proceeding
+      if (!chartsBaseUrl) {
+        console.error('Charts base URL is not defined');
+        return;
+      }
+
+      // Ensure the URL has the proper format (add trailing slash if missing)
+      let formattedBaseUrl = chartsBaseUrl;
+      if (formattedBaseUrl && !formattedBaseUrl.endsWith('/')) {
+        formattedBaseUrl = `${formattedBaseUrl}/`;
+      }
+
+      console.log('Using formatted base URL:', formattedBaseUrl);
+
+      try {
+        const sdk = new ChartsEmbedSDK({
+          baseUrl: formattedBaseUrl,
+        });
+
+        // Enhanced dashboard configuration
+        const chart = sdk.createDashboard({
+          dashboardId: chartId,
+
+          // Customize size
+          //height: 400,
+          //width: 800,
+
+          // Attribution settings
+          showAttribution: true,
+        });
+
+        chart
+          .render(chartContainerRef.current)
+          .then(() => {
+            console.log('Chart rendered successfully.');
+            setChartInstance(chart);
+          })
+          .catch((err) => {
+            console.error('Error rendering chart:', err);
+            // Log more details about the error
+            console.error(
+              'Error details:',
+              JSON.stringify(err, null, 2)
+            );
+          });
+      } catch (error) {
+        console.error('Error creating Charts SDK:', error);
+      }
+    }
+  }, [
+    chartReady,
+    chartInstance,
+    chartContainerRef,
+    chartId,
+    chartsBaseUrl,
+  ]);
 
   /**
    * SSE for change streams. Whenever a change occurs in MongoDB,
    * we refresh the chart if it is initialized.
    */
   useEffect(() => {
+    // Only set up change stream if chart has been initialized
+    if (!chartInstance) return;
+
     const sseUrl = `/api/sse?sessionId=${sessionId.current}`;
     console.log('Connecting to change stream SSE...');
 
@@ -111,14 +180,12 @@ export default function Page() {
       try {
         const data = JSON.parse(event.data);
 
-        // If the chart is already initialized, refresh it
-        if (chartInstance) {
-          chartInstance
-            .refresh()
-            .catch((err) =>
-              console.error('Error refreshing chart:', err)
-            );
-        }
+        // Refresh the chart when data changes
+        chartInstance
+          .refresh()
+          .catch((err) =>
+            console.error('Error refreshing chart:', err)
+          );
       } catch (error) {
         console.error('Error parsing SSE event:', error);
       }
@@ -134,39 +201,7 @@ export default function Page() {
       console.log('Closing change stream SSE...');
       changeStreamSource.close();
     };
-  }, [chartInstance, chartReady]);
-
-  /**
-   * Initialize the chart only after we've seen the first change event.
-   */
-  useEffect(() => {
-    // If chart not created yet, but we are "ready" (meaning we've seen at least 1 DB change),
-    // and the container is in the DOM, create & render the chart now
-
-    console.log(chartsBaseUrl);
-    if (chartReady && !chartInstance && chartContainerRef.current) {
-      const sdk = new ChartsEmbedSDK({ baseUrl: chartsBaseUrl });
-      const chart = sdk.createDashboard({
-        dashboardId: chartId,
-        height: '600px',
-        width: '100%',
-      });
-
-      chart
-        .render(chartContainerRef.current)
-        .then(() => {
-          console.log('Chart rendered successfully.');
-          setChartInstance(chart);
-        })
-        .catch((err) => console.error('Error rendering chart:', err));
-    }
-  }, [
-    chartReady,
-    chartInstance,
-    chartContainerRef,
-    chartId,
-    chartsBaseUrl,
-  ]);
+  }, [chartInstance]);
 
   /**
    * Button that opens your separate web app in a new tab.
