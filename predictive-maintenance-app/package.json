@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.758.0",
+    "@aws-sdk/credential-provider-node": "^3.817.0",
     "@google-cloud/translate": "^9.0.0",
     "@langchain/aws": "^0.1.7",
     "@langchain/community": "^0.3.36",

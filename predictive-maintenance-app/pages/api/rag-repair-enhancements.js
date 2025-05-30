@@ -1,6 +1,7 @@
 import { OpenAIEmbeddings, ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
 import { BedrockChat } from "@langchain/community/chat_models/bedrock";
+import { defaultProvider } from "@aws-sdk/credential-provider-node";
 
 const AI_MODEL_PROVIDER = process.env.AI_MODEL_PROVIDER;
 
@@ -27,10 +28,7 @@ if (AI_MODEL_PROVIDER === "openai") {
   const llm = new BedrockChat({
     model: "cohere.command-r-v1:0",
     region: process.env.AWS_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
+    credentials: defaultProvider(),
   });
 
   generateCompletion = async (prompt) => {
