@@ -6,17 +6,44 @@ import {
   InvokeModelCommand,
 } from "@aws-sdk/client-bedrock-runtime";
 import { BedrockChat } from "@langchain/community/chat_models/bedrock";
+import { fromSSO } from "@aws-sdk/credential-provider-sso";
+import { defaultProvider } from "@aws-sdk/credential-provider-node";
 
 const AI_MODEL_PROVIDER = process.env.AI_MODEL_PROVIDER;
+const AWS_PROFILE = process.env.AWS_PROFILE;
+const ENV = process.env.NEXT_PUBLIC_ENV;
 const uri = process.env.MONGODB_CONNECTION_STRING;
 const dbName = process.env.DATABASE;
 const collectionName = process.env.MAINTAINENCE_HISTORY_COLLECTION;
 const indexNameOpenAI = process.env.CRITICALITY_ANALYSIS_SEARCH_INDEX_OPEN_AI;
 const indexNameCohere = process.env.CRITICALITY_ANALYSIS_SEARCH_INDEX;
 
-const client = new MongoClient(uri);
+let model,
+  embeddings,
+  getEmbeddings,
+  generateCompletion,
+  cachedMongoDBClient,
+  cachedBedrockClient;
 
-let model, embeddings, getEmbeddings, generateCompletion;
+function getBedrockClient() {
+  if (cachedBedrockClient) return cachedBedrockClient;
+
+  cachedBedrockClient = new BedrockRuntimeClient({
+    region: process.env.AWS_REGION,
+    credentials:
+      ENV == "production"
+        ? defaultProvider()
+        : fromSSO({ profile: AWS_PROFILE }),
+  });
+
+  return cachedBedrockClient;
+}
+
+async function connectToDatabase() {
+  if (cachedMongoDBClient) return cachedMongoDBClient;
+  cachedMongoDBClient = await new MongoClient(uri).connect();
+  return cachedMongoDBClient;
+}
 
 if (AI_MODEL_PROVIDER === "openai") {
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -44,13 +71,7 @@ if (AI_MODEL_PROVIDER === "openai") {
   };
 } else if (AI_MODEL_PROVIDER === "cohere") {
   console.log("Using Cohere");
-  const bedrockClient = new BedrockRuntimeClient({
-    region: process.env.AWS_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
-  });
+  const bedrockClient = getBedrockClient();
 
   getEmbeddings = async (texts) => {
     const input = {
@@ -64,22 +85,32 @@ if (AI_MODEL_PROVIDER === "openai") {
     };
 
     const command = new InvokeModelCommand(input);
-    const response = await bedrockClient.send(command);
-    const rawRes = response.body;
-
-    const jsonString = new TextDecoder().decode(rawRes);
-    const parsedResponse = JSON.parse(jsonString);
-
-    return parsedResponse.embeddings;
+    let retries = 3;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await bedrockClient.send(command);
+        const rawRes = response.body;
+        const jsonString = new TextDecoder().decode(rawRes);
+        const parsedResponse = JSON.parse(jsonString);
+        return parsedResponse.embeddings;
+      } catch (err) {
+        if (err.name === "ServiceUnavailableException" && attempt < retries) {
+          console.warn(`Bedrock throttling (attempt ${attempt}), retrying...`);
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt)); // backoff
+          continue;
+        }
+        throw err;
+      }
+    }
   };
 
   const llm = new BedrockChat({
     model: "cohere.command-r-v1:0",
     region: process.env.AWS_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
+    credentials:
+      ENV == "production"
+        ? defaultProvider()
+        : fromSSO({ profile: AWS_PROFILE }),
   });
 
   generateCompletion = async (prompt) => {
@@ -108,7 +139,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await client.connect();
+    const client = await connectToDatabase();
     const db = client.db(dbName);
     const collection = db.collection(collectionName);
     console.log("Connected to MongoDB");
@@ -150,7 +181,5 @@ export default async function handler(req, res) {
     res
       .status(500)
       .json({ message: "Error generating answer", error: error.message });
-  } finally {
-    await client.close();
   }
 }
