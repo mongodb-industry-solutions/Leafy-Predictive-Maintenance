@@ -8,6 +8,10 @@ services:
       - "3000:3000"
     restart: always
     container_name: predictive-maintenance-app-frontend
+    volumes:
+      - ~/.aws/credentials:/home/nextjs/.aws/credentials:ro
+      - ~/.aws/config:/home/nextjs/.aws/config:ro
+      - ~/.aws/sso/cache:/home/nextjs/.aws/sso/cache:rw
   alerts-app:
     build:
       context: ./
