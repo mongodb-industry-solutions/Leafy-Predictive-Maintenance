@@ -36,13 +36,13 @@ REPAIR_PLAN_SEARCH_INDEX_OPEN_AI=""
 OPENAI_API_KEY=""
 OPENAI_API_MODEL=""
 AWS_REGION=""
-AWS_ACCESS_KEY_ID=""
-AWS_SECRET_ACCESS_KEY=""
+AWS_PROFILE="default"
 GCP_TRANSLATE_API_KEY=""
 GCP_PROJECT_ID=""
 NEXT_PUBLIC_ALERT_APP_URL="http://localhost:5003/"
 NEXT_PUBLIC_CHARTS_BASE_URL=
 NEXT_PUBLIC_CHART_ID=
+NEXT_PUBLIC_ENV="local"
 ```
 
 Replace the placeholder values with your actual configuration values. Some of the collections you will import in step 3.
@@ -82,7 +82,8 @@ To use the features provided by this project, you will need access to AWS with a
 #### Prerequisites
 
 - An active AWS account.
-- A user with necessary permissions to access AWS Bedrock.
+- AWS CLI installed and a profile with access to AWS Bedrock services
+- AWS SSO authenticated (recommended for secure CLI sessions)
 - Access to the following Cohere models:
   - cohere.embed-english-v3 for embeddings.
   - cohere.command-r-v1:0 for completions.
@@ -97,9 +98,11 @@ You will need to set up your environment variables correctly for this project to
 
 ```dotenv
 AWS_REGION=your-aws-region
-AWS_ACCESS_KEY_ID=your-aws-access-key-id
-AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+AWS_PROFILE=your-aws-sso-profile
 ```
+
+> [!TIP]
+> Make sure your AWS CLI is configured and authenticated before starting the app. We recommend running `aws sso login` if using AWS SSO.
 
 #### Models Used
 
