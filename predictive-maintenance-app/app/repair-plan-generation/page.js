@@ -30,19 +30,19 @@ export default function Page() {
 
   const handleSuggestionOne = () => {
     setQuestion(
-      "Generate a repair plan for toolwear failure using machine manual and old work orders"
+      "Generate a detailed step by step repair plan for toolwear failure using machine manual and old work orders"
     );
   };
 
   const handleSuggestionTwo = () => {
     setQuestion(
-      "Generate a repair plan for power failure using machine manual and old work orders"
+      "Generate a detailed step by step repair plan for power failure using machine manual and old work orders"
     );
   };
 
   const handleSuggestionThree = () => {
     setQuestion(
-      "Generate a repair plan for overstrain failure using machine manual and old work orders"
+      "Generate a detailed step by step repair plan for overstrain failure using machine manual and old work orders"
     );
   };
 
@@ -250,22 +250,22 @@ export default function Page() {
                     className={styles.suggestion}
                     onClick={handleSuggestionOne}
                   >
-                    Generate a repair plan for toolwear failure using machine
-                    manual and old work orders
+                    Generate a detailed step by step repair plan for toolwear
+                    failure using machine manual and old work orders
                   </button>
                   <button
                     className={styles.suggestion}
                     onClick={handleSuggestionTwo}
                   >
-                    Generate a repair plan for power failure using machine
-                    manual and old work orders
+                    Generate a detailed step by step repair plan for power
+                    failure using machine manual and old work orders
                   </button>
                   <button
                     className={styles.suggestion}
                     onClick={handleSuggestionThree}
                   >
-                    Generate a repair plan for overstrain failure using machine
-                    manual and old work orders
+                    Generate a detailed step by step repair plan for overstrain
+                    failure using machine manual and old work orders
                   </button>
                 </div>
               </div>
