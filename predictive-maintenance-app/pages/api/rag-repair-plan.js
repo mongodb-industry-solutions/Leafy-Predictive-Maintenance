@@ -6,9 +6,12 @@ import {
   InvokeModelCommand,
 } from "@aws-sdk/client-bedrock-runtime";
 import { BedrockChat } from "@langchain/community/chat_models/bedrock";
+import { fromSSO } from "@aws-sdk/credential-provider-sso";
 import { defaultProvider } from "@aws-sdk/credential-provider-node";
 
 const AI_MODEL_PROVIDER = process.env.AI_MODEL_PROVIDER;
+const AWS_PROFILE = process.env.AWS_PROFILE;
+const ENV = process.env.NEXT_PUBLIC_ENV;
 const uri = process.env.MONGODB_CONNECTION_STRING;
 const dbName = process.env.DATABASE;
 const collectionName = process.env.REPAIR_MANUALS_COLLECTION;
@@ -47,7 +50,10 @@ if (AI_MODEL_PROVIDER === "openai") {
   console.log("Using Cohere");
   const bedrockClient = new BedrockRuntimeClient({
     region: process.env.AWS_REGION,
-    credentials: defaultProvider(),
+    credentials:
+      ENV == "production"
+        ? defaultProvider()
+        : fromSSO({ profile: AWS_PROFILE }),
   });
 
   getEmbeddings = async (texts) => {
@@ -74,7 +80,10 @@ if (AI_MODEL_PROVIDER === "openai") {
   const llm = new BedrockChat({
     model: "cohere.command-r-v1:0",
     region: process.env.AWS_REGION,
-    credentials: defaultProvider(),
+    credentials:
+      ENV == "production"
+        ? defaultProvider()
+        : fromSSO({ profile: AWS_PROFILE }),
   });
 
   generateCompletion = async (prompt) => {
