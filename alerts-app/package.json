@@ -19,5 +19,8 @@
     "mongodb": "^6.9.0",
     "react-bootstrap": "^2.10.2",
     "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "license-checker": "^25.0.1"
   }
 }
