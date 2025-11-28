@@ -11,7 +11,7 @@ import { defaultProvider } from "@aws-sdk/credential-provider-node";
 
 const AI_MODEL_PROVIDER = process.env.AI_MODEL_PROVIDER;
 const AWS_PROFILE = process.env.AWS_PROFILE;
-const ENV = process.env.NEXT_PUBLIC_ENV;
+const ENV = process.env.APP_ENV;
 const uri = process.env.MONGODB_CONNECTION_STRING;
 const dbName = process.env.DATABASE;
 const collectionName = process.env.REPAIR_MANUALS_COLLECTION;

@@ -1,0 +1,13 @@
+env:
+  NODE_ENV: staging
+  AWS_REGION: us-east-1
+  APP_NAME: predictive-maintenance-alerts
+
+  DATABASE: "smart_factory_cohere"
+
+envSecrets:
+  MONGODB_CONNECTION_STRING: predictive-maintenance
+
+ports:
+  - containerPort: 8080
+    name: http

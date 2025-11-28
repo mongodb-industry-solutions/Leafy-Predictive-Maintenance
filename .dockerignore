@@ -1,5 +1,47 @@
-node_modules
-.next
-npm-debug.log
-docker/
-.DS_Store
+# Version Control
+.git/
+.gitignore
+
+# Dependencies (we install them fresh)
+**/node_modules/
+**/npm-debug.log
+**/yarn-debug.log
+**/yarn-error.log
+
+# Build Artifacts - Next.js / React
+**/.next/
+**/build/
+**/dist/
+**/out/
+**/coverage/
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.venv/
+**/.pytest_cache/
+
+# Environment Variables (Inject at runtime)
+.env
+.env.*
+**/.env
+**/.env.*
+
+# IDE / Editor
+.vscode/
+.idea/
+.cursor/
+**/.DS_Store
+
+# Documentation & CI/CD Configs
+README.md
+LICENSE
+Makefile
+docker-compose*.yml
+.drone.yml
+task-def.json
+ecs-params.yml
+policy.json
+environments/

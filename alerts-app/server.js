@@ -12,7 +12,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const port = 5003;
+const port = process.env.PORT || 5003;
 const alerts = [];
 const mongoURI = process.env.MONGODB_CONNECTION_STRING;
 const dbName = process.env.DATABASE;

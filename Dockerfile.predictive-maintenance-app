@@ -15,7 +15,8 @@ COPY predictive-maintenance-app/. .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-RUN rm -f .env.local
+# Removed .env deletion since it might not exist and we don't copy it if it's not in context
+# RUN rm -f .env.local
 
 RUN npm run build
 
@@ -32,13 +33,16 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/.env.production ./.env.production
+
+# Removed COPY of .env.production as we rely on runtime environment variables
+# COPY --from=builder /app/.env.production ./.env.production
+
 COPY --from=builder /app/app/failure-prediction/public/test_data.csv ./app/failure-prediction/public/test_data.csv
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 8080
 
-ENV PORT=3000
+ENV PORT=8080
 
 CMD ["npm", "start"]
