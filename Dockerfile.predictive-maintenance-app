@@ -5,7 +5,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY predictive-maintenance-app/package*.json ./
-RUN npm ci
+RUN npm ci && npm cache clean --force
 
 FROM base AS builder
 WORKDIR /app
@@ -14,9 +14,6 @@ COPY predictive-maintenance-app/. .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-
-# Removed .env deletion since it might not exist and we don't copy it if it's not in context
-# RUN rm -f .env.local
 
 RUN npm run build
 
@@ -33,9 +30,6 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
-
-# Removed COPY of .env.production as we rely on runtime environment variables
-# COPY --from=builder /app/.env.production ./.env.production
 
 COPY --from=builder /app/app/failure-prediction/public/test_data.csv ./app/failure-prediction/public/test_data.csv
 
