@@ -81,7 +81,6 @@ steps:
       values:
         - "image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-frontend"
         - "image.tag=git-${DRONE_COMMIT_SHA:0:7}"
-        - "containerPort=8080"
         - "sidecarContainers[0].name=inference"
         - "sidecarContainers[0].image=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-inference:git-${DRONE_COMMIT_SHA:0:7}"
         - "ingress.enabled=true"
@@ -113,7 +112,6 @@ steps:
       values:
         - "image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-alerts"
         - "image.tag=git-${DRONE_COMMIT_SHA:0:7}"
-        - "containerPort=8080"
         - "ingress.enabled=true"
         - "ingress.hosts[0]=predictive-maintenance-alerts.industrysolutions.staging.corp.mongodb.com"
         - "mesh.enabled=true"
@@ -215,7 +213,6 @@ steps:
       values:
         - "image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-frontend-prod"
         - "image.tag=git-${DRONE_COMMIT_SHA:0:7}"
-        - "containerPort=8080"
         - "sidecarContainers[0].name=inference"
         - "sidecarContainers[0].image=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-inference-prod:git-${DRONE_COMMIT_SHA:0:7}"
         - "ingress.enabled=true"
@@ -247,7 +244,6 @@ steps:
       values:
         - "image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-alerts-prod"
         - "image.tag=git-${DRONE_COMMIT_SHA:0:7}"
-        - "containerPort=8080"
         - "ingress.enabled=true"
         - "ingress.hosts[0]=predictive-maintenance-alerts.industrysolutions.prod.corp.mongodb.com"
         - "mesh.enabled=true"

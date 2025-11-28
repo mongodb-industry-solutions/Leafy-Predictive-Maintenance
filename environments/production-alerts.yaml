@@ -7,7 +7,3 @@ env:
 
 envSecrets:
   MONGODB_CONNECTION_STRING: predictive-maintenance
-
-ports:
-  - containerPort: 8080
-    name: http

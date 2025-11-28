@@ -29,10 +29,6 @@ envSecrets:
   OPENAI_API_KEY: predictive-maintenance
   GCP_TRANSLATE_API_KEY: predictive-maintenance
 
-ports:
-  - containerPort: 8080
-    name: http
-
 sidecarContainers:
   - name: inference
     image: 795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-inference:latest
