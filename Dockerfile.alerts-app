@@ -9,5 +9,6 @@ COPY alerts-app/client .
 RUN npm run build
 WORKDIR /usr/src/app
 COPY alerts-app/. .
-EXPOSE 5003
+EXPOSE 8080
+ENV PORT=8080
 CMD ["npm", "start"]

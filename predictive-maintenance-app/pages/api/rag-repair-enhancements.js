@@ -6,7 +6,7 @@ import { defaultProvider } from "@aws-sdk/credential-provider-node";
 
 const AI_MODEL_PROVIDER = process.env.AI_MODEL_PROVIDER;
 const AWS_PROFILE = process.env.AWS_PROFILE;
-const ENV = process.env.NEXT_PUBLIC_ENV;
+const ENV = process.env.APP_ENV;
 
 let model, generateCompletion;
 

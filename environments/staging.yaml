@@ -1,0 +1,67 @@
+env:
+  NODE_ENV: staging
+  APP_ENV: staging
+  AWS_REGION: us-east-1
+  APP_NAME: predictive-maintenance
+
+  # Application Config
+  DATABASE: "smart_factory_cohere"
+  AI_MODEL_PROVIDER: "cohere"
+  FAILURES_COLLECTION: "machine_failures"
+  RAW_DATA_COLLECTION: "raw_data"
+  TRANSFORMED_DATA_COLLECTION: "transformed_data"
+  MODELS_COLLECTION: "ml_models"
+  MAINTAINENCE_HISTORY_COLLECTION: "maintenance_history_new"
+  CRITICALITY_ANALYSIS_SEARCH_INDEX: "pred_maint_criticality_index_new_cohere"
+  CRITICALITY_ANALYSIS_SEARCH_INDEX_OPEN_AI: "pred_maint_criticality_index_openai"
+  REPAIR_MANUALS_COLLECTION: "repair_manuals"
+  REPAIR_PLAN_SEARCH_INDEX: "pred_maint_repair_index_cohere"
+  REPAIR_PLAN_SEARCH_INDEX_OPEN_AI: "pred_maint_repair_index_openai"
+  OPENAI_API_MODEL: "gpt-4"
+  GCP_PROJECT_ID: "manufacturing-project-425012"
+  ALERT_APP_URL: "https://predictive-maintenance-alerts.industrysolutions.staging.corp.mongodb.com"
+  CHART_ID: "6704f57b-91ca-4f64-8625-e54e2b437dfd"
+  CHARTS_BASE_URL: "https://charts.mongodb.com/charts-jeffn-zsdtj"
+  AWS_PROFILE: "default"
+
+envSecrets:
+  MONGODB_CONNECTION_STRING: predictive-maintenance
+  OPENAI_API_KEY: predictive-maintenance
+  GCP_TRANSLATE_API_KEY: predictive-maintenance
+
+ports:
+  - containerPort: 8080
+    name: http
+
+sidecarContainers:
+  - name: inference
+    image: 795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-inference:latest
+    env:
+      - name: MONGODB_CONNECTION_STRING
+        valueFrom:
+          secretKeyRef:
+            name: predictive-maintenance
+            key: MONGODB_CONNECTION_STRING
+      - name: DATABASE
+        value: "smart_factory_cohere"
+      - name: FAILURES_COLLECTION
+        value: "machine_failures"
+      - name: MODELS_COLLECTION
+        value: "ml_models"
+      - name: FEATURES_COLLECTION
+        value: "feature_store"
+      - name: TRANSFORMED_DATA_COLLECTION
+        value: "transformed_data"
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1536Mi
+      requests:
+        cpu: 500m
+        memory: 768Mi
+
+serviceAccount:
+  enabled: true
+  irsa:
+    accountId: "275662791714"
+    roleName: "kanopy-staging-cicd-irsa"
