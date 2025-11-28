@@ -8,12 +8,14 @@ function App() {
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const SERVER_URL =
-    process.env.REACT_APP_SERVER_URL || "http://localhost:5003";
+    process.env.REACT_APP_SERVER_URL ||
+    (process.env.NODE_ENV === "production" ? "" : "http://localhost:5003");
 
   useEffect(() => {
     fetchAlerts();
     // Setup WebSocket connection
-    const socket = socketIOClient(SERVER_URL);
+    // Use the server URL or default to the current origin
+    const socket = socketIOClient(SERVER_URL || "/");
 
     // Listen for alert updates
     socket.on("alertUpdate", (updatedAlerts) => {

@@ -1,43 +1,18 @@
 import { MongoClient } from "mongodb";
 import { OpenAIEmbeddings, ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
-import {
-  BedrockRuntimeClient,
-  InvokeModelCommand,
-} from "@aws-sdk/client-bedrock-runtime";
-import { BedrockChat } from "@langchain/community/chat_models/bedrock";
-import { fromSSO } from "@aws-sdk/credential-provider-sso";
-import { defaultProvider } from "@aws-sdk/credential-provider-node";
+import { InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { getBedrockRuntimeClient, createBedrockChat } from "@/lib/bedrock";
 
 const AI_MODEL_PROVIDER = process.env.AI_MODEL_PROVIDER;
-const AWS_PROFILE = process.env.AWS_PROFILE;
-const ENV = process.env.NEXT_PUBLIC_ENV;
+const ENV = process.env.APP_ENV;
 const uri = process.env.MONGODB_CONNECTION_STRING;
 const dbName = process.env.DATABASE;
 const collectionName = process.env.MAINTAINENCE_HISTORY_COLLECTION;
 const indexNameOpenAI = process.env.CRITICALITY_ANALYSIS_SEARCH_INDEX_OPEN_AI;
 const indexNameCohere = process.env.CRITICALITY_ANALYSIS_SEARCH_INDEX;
 
-let model,
-  embeddings,
-  getEmbeddings,
-  generateCompletion,
-  cachedMongoDBClient,
-  cachedBedrockClient;
-
-function getBedrockClient() {
-  if (cachedBedrockClient) return cachedBedrockClient;
-
-  cachedBedrockClient = new BedrockRuntimeClient({
-    region: process.env.AWS_REGION,
-    credentials:
-      ENV == "production"
-        ? defaultProvider()
-        : fromSSO({ profile: AWS_PROFILE }),
-  });
-
-  return cachedBedrockClient;
-}
+let model, embeddings, getEmbeddings, generateCompletion, cachedMongoDBClient;
 
 async function connectToDatabase() {
   if (cachedMongoDBClient) return cachedMongoDBClient;
@@ -71,7 +46,7 @@ if (AI_MODEL_PROVIDER === "openai") {
   };
 } else if (AI_MODEL_PROVIDER === "cohere") {
   console.log("Using Cohere");
-  const bedrockClient = getBedrockClient();
+  const bedrockClient = getBedrockRuntimeClient();
 
   getEmbeddings = async (texts) => {
     const input = {
@@ -104,14 +79,7 @@ if (AI_MODEL_PROVIDER === "openai") {
     }
   };
 
-  const llm = new BedrockChat({
-    model: "cohere.command-r-v1:0",
-    region: process.env.AWS_REGION,
-    credentials:
-      ENV == "production"
-        ? defaultProvider()
-        : fromSSO({ profile: AWS_PROFILE }),
-  });
+  const llm = createBedrockChat("cohere.command-r-v1:0");
 
   generateCompletion = async (prompt) => {
     const conversation = [

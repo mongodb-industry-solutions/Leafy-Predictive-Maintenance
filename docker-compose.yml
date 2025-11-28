@@ -5,9 +5,11 @@ services:
       dockerfile: Dockerfile.predictive-maintenance-app
     image: predictive-maintenance-app-frontend:latest
     ports:
-      - "3000:3000"
+      - "8080:8080"
     restart: always
     container_name: predictive-maintenance-app-frontend
+    env_file:
+      - ./predictive-maintenance-app/.env.local
     volumes:
       - ~/.aws/credentials:/home/nextjs/.aws/credentials:ro
       - ~/.aws/config:/home/nextjs/.aws/config:ro
@@ -18,9 +20,11 @@ services:
       dockerfile: Dockerfile.alerts-app
     image: alerts-app:latest
     ports:
-      - "5003:5003"
+      - "5003:8080"
     restart: always
     container_name: alerts-app
+    env_file:
+      - ./alerts-app/.env
   inference-service:
     build:
       context: ./
@@ -28,3 +32,5 @@ services:
     image: inference-service:latest
     restart: always
     container_name: inference-service
+    env_file:
+      - ./failure-prediction-module/.env

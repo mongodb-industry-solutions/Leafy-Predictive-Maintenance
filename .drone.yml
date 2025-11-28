@@ -1,0 +1,261 @@
+---
+kind: pipeline
+type: kubernetes
+name: staging-combined
+
+trigger:
+  branch:
+    - staging
+
+steps:
+  # 1. Build and publish Frontend (Predictive Maintenance App)
+  - name: publish-frontend
+    image: plugins/kaniko-ecr
+    settings:
+      create_repository: true
+      registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
+      repo: industrysolutions/predictive-maintenance-frontend
+      dockerfile: Dockerfile.predictive-maintenance-app
+      context: .
+      tags:
+        - git-${DRONE_COMMIT_SHA:0:7}
+        - latest
+      access_key:
+        from_secret: ecr_access_key
+      secret_key:
+        from_secret: ecr_secret_key
+    when:
+      event:
+        - push
+
+  # 2. Build and publish Inference Module (Sidecar)
+  - name: publish-inference
+    image: plugins/kaniko-ecr
+    settings:
+      create_repository: true
+      registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
+      repo: industrysolutions/predictive-maintenance-inference
+      dockerfile: Dockerfile.failure-prediction-module
+      context: .
+      tags:
+        - git-${DRONE_COMMIT_SHA:0:7}
+        - latest
+      access_key:
+        from_secret: ecr_access_key
+      secret_key:
+        from_secret: ecr_secret_key
+    when:
+      event:
+        - push
+
+  # 3. Build and publish Alerts App
+  - name: publish-alerts
+    image: plugins/kaniko-ecr
+    settings:
+      create_repository: true
+      registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
+      repo: industrysolutions/predictive-maintenance-alerts
+      dockerfile: Dockerfile.alerts-app
+      context: .
+      tags:
+        - git-${DRONE_COMMIT_SHA:0:7}
+        - latest
+      access_key:
+        from_secret: ecr_access_key
+      secret_key:
+        from_secret: ecr_secret_key
+    when:
+      event:
+        - push
+
+  # 4. Deploy Main App (Frontend + Inference Sidecar)
+  - name: deploy-predictive-maintenance-staging
+    image: public.ecr.aws/kanopy/drone-helm:v3
+    settings:
+      chart: mongodb/web-app
+      chart_version: 4.25.0
+      add_repos: [mongodb=https://10gen.github.io/helm-charts]
+      namespace: industrysolutions
+      release: predictive-maintenance
+      values_files: ["environments/staging.yaml"]
+      values:
+        - "image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-frontend"
+        - "image.tag=git-${DRONE_COMMIT_SHA:0:7}"
+        - "sidecarContainers[0].name=inference"
+        - "sidecarContainers[0].image=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-inference:git-${DRONE_COMMIT_SHA:0:7}"
+        - "ingress.enabled=true"
+        - "ingress.hosts[0]=predictive-maintenance.industrysolutions.staging.corp.mongodb.com"
+        - "mesh.enabled=true"
+        - "resources.limits.cpu=1000m"
+        - "resources.limits.memory=1536Mi"
+        - "resources.requests.cpu=500m"
+        - "resources.requests.memory=768Mi"
+      api_server: https://api.staging.corp.mongodb.com
+      kubernetes_token:
+        from_secret: staging_kubernetes_token
+    when:
+      branch:
+        - staging
+      event:
+        - push
+
+  # 5. Deploy Alerts App
+  - name: deploy-alerts-staging
+    image: public.ecr.aws/kanopy/drone-helm:v3
+    settings:
+      chart: mongodb/web-app
+      chart_version: 4.25.0
+      add_repos: [mongodb=https://10gen.github.io/helm-charts]
+      namespace: industrysolutions
+      release: predictive-maintenance-alerts
+      values_files: ["environments/staging-alerts.yaml"]
+      values:
+        - "image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-alerts"
+        - "image.tag=git-${DRONE_COMMIT_SHA:0:7}"
+        - "ingress.enabled=true"
+        - "ingress.hosts[0]=predictive-maintenance-alerts.industrysolutions.staging.corp.mongodb.com"
+        - "mesh.enabled=true"
+        - "resources.limits.cpu=1000m"
+        - "resources.limits.memory=1536Mi"
+        - "resources.requests.cpu=500m"
+        - "resources.requests.memory=768Mi"
+      api_server: https://api.staging.corp.mongodb.com
+      kubernetes_token:
+        from_secret: staging_kubernetes_token
+    when:
+      branch:
+        - staging
+      event:
+        - push
+
+---
+kind: pipeline
+type: kubernetes
+name: production-combined
+
+trigger:
+  branch:
+    - main
+  event:
+    - push
+
+steps:
+  # 1. Build and publish Frontend (Predictive Maintenance App) - Prod
+  - name: publish-frontend-prod
+    image: plugins/kaniko-ecr
+    settings:
+      create_repository: true
+      registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
+      repo: industrysolutions/predictive-maintenance-frontend-prod
+      dockerfile: Dockerfile.predictive-maintenance-app
+      context: .
+      tags:
+        - git-${DRONE_COMMIT_SHA:0:7}
+        - latest
+      access_key:
+        from_secret: ecr_access_key
+      secret_key:
+        from_secret: ecr_secret_key
+    when:
+      event:
+        - push
+
+  # 2. Build and publish Inference Module (Sidecar) - Prod
+  - name: publish-inference-prod
+    image: plugins/kaniko-ecr
+    settings:
+      create_repository: true
+      registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
+      repo: industrysolutions/predictive-maintenance-inference-prod
+      dockerfile: Dockerfile.failure-prediction-module
+      context: .
+      tags:
+        - git-${DRONE_COMMIT_SHA:0:7}
+        - latest
+      access_key:
+        from_secret: ecr_access_key
+      secret_key:
+        from_secret: ecr_secret_key
+    when:
+      event:
+        - push
+
+  # 3. Build and publish Alerts App - Prod
+  - name: publish-alerts-prod
+    image: plugins/kaniko-ecr
+    settings:
+      create_repository: true
+      registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
+      repo: industrysolutions/predictive-maintenance-alerts-prod
+      dockerfile: Dockerfile.alerts-app
+      context: .
+      tags:
+        - git-${DRONE_COMMIT_SHA:0:7}
+        - latest
+      access_key:
+        from_secret: ecr_access_key
+      secret_key:
+        from_secret: ecr_secret_key
+    when:
+      event:
+        - push
+
+  # 4. Deploy Main App (Frontend + Inference Sidecar) - Prod
+  - name: deploy-predictive-maintenance-prod
+    image: public.ecr.aws/kanopy/drone-helm:v3
+    settings:
+      chart: mongodb/web-app
+      chart_version: 4.25.0
+      add_repos: [mongodb=https://10gen.github.io/helm-charts]
+      namespace: industrysolutions
+      release: predictive-maintenance-prod
+      values_files: ["environments/production.yaml"]
+      values:
+        - "image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-frontend-prod"
+        - "image.tag=git-${DRONE_COMMIT_SHA:0:7}"
+        - "sidecarContainers[0].name=inference"
+        - "sidecarContainers[0].image=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-inference-prod:git-${DRONE_COMMIT_SHA:0:7}"
+        - "ingress.enabled=true"
+        - "ingress.hosts[0]=predictive-maintenance.industrysolutions.prod.corp.mongodb.com"
+        - "mesh.enabled=true"
+        - "resources.limits.cpu=1000m"
+        - "resources.limits.memory=1536Mi"
+        - "resources.requests.cpu=500m"
+        - "resources.requests.memory=768Mi"
+      api_server: https://api.prod.corp.mongodb.com
+      kubernetes_token:
+        from_secret: prod_kubernetes_token
+    when:
+      branch:
+        - main
+      event:
+        - push
+
+  # 5. Deploy Alerts App - Prod
+  - name: deploy-alerts-prod
+    image: public.ecr.aws/kanopy/drone-helm:v3
+    settings:
+      chart: mongodb/web-app
+      chart_version: 4.25.0
+      add_repos: [mongodb=https://10gen.github.io/helm-charts]
+      namespace: industrysolutions
+      release: predictive-maintenance-alerts-prod
+      values_files: ["environments/production-alerts.yaml"]
+      values:
+        - "image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/industrysolutions/predictive-maintenance-alerts-prod"
+        - "image.tag=git-${DRONE_COMMIT_SHA:0:7}"
+        - "ingress.enabled=true"
+        - "ingress.hosts[0]=predictive-maintenance-alerts.industrysolutions.prod.corp.mongodb.com"
+        - "mesh.enabled=true"
+        - "resources.limits.cpu=1000m"
+        - "resources.limits.memory=1536Mi"
+        - "resources.requests.cpu=500m"
+        - "resources.requests.memory=768Mi"
+      api_server: https://api.prod.corp.mongodb.com
+      kubernetes_token:
+        from_secret: prod_kubernetes_token
+    when:
+      branch:
+        - main
+      event:
+        - push
