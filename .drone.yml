@@ -101,7 +101,7 @@ steps:
         - push
 
   # 5. Deploy Alerts App
-    - name: deploy-alerts-staging
+  - name: deploy-alerts-staging
     image: public.ecr.aws/kanopy/drone-helm:v3
     settings:
       chart: mongodb/web-app
@@ -235,7 +235,7 @@ steps:
         - push
 
   # 5. Deploy Alerts App - Prod
-    - name: deploy-alerts-prod
+  - name: deploy-alerts-prod
     image: public.ecr.aws/kanopy/drone-helm:v3
     settings:
       chart: mongodb/web-app
