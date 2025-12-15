@@ -86,10 +86,16 @@ steps:
         - "ingress.enabled=true"
         - "ingress.hosts[0]=predictive-maintenance.industrysolutions.staging.corp.mongodb.com"
         - "mesh.enabled=true"
+        # Main container resources (Frontend)
         - "resources.limits.cpu=1000m"
-        - "resources.limits.memory=1536Mi"
-        - "resources.requests.cpu=500m"
-        - "resources.requests.memory=768Mi"
+        - "resources.limits.memory=1024Mi"
+        - "resources.requests.cpu=100m"
+        - "resources.requests.memory=256Mi"
+        # Sidecar container resources (Inference)
+        - "sidecarContainers[0].resources.limits.cpu=1000m"
+        - "sidecarContainers[0].resources.limits.memory=1536Mi"
+        - "sidecarContainers[0].resources.requests.cpu=100m"
+        - "sidecarContainers[0].resources.requests.memory=384Mi"
       api_server: https://api.staging.corp.mongodb.com
       kubernetes_token:
         from_secret: staging_kubernetes_token
@@ -115,10 +121,11 @@ steps:
         - "ingress.enabled=true"
         - "ingress.hosts[0]=predictive-maintenance-alerts.industrysolutions.staging.corp.mongodb.com"
         - "mesh.enabled=true"
-        - "resources.limits.cpu=1000m"
-        - "resources.limits.memory=1536Mi"
-        - "resources.requests.cpu=500m"
-        - "resources.requests.memory=768Mi"
+        # Alerts app resources
+        - "resources.limits.cpu=500m"
+        - "resources.limits.memory=512Mi"
+        - "resources.requests.cpu=50m"
+        - "resources.requests.memory=192Mi"
       api_server: https://api.staging.corp.mongodb.com
       kubernetes_token:
         from_secret: staging_kubernetes_token
@@ -218,10 +225,16 @@ steps:
         - "ingress.enabled=true"
         - "ingress.hosts[0]=predictive-maintenance.industrysolutions.prod.corp.mongodb.com"
         - "mesh.enabled=true"
+        # Main container resources (Frontend)
         - "resources.limits.cpu=1000m"
-        - "resources.limits.memory=1536Mi"
-        - "resources.requests.cpu=500m"
-        - "resources.requests.memory=768Mi"
+        - "resources.limits.memory=1024Mi"
+        - "resources.requests.cpu=100m"
+        - "resources.requests.memory=256Mi"
+        # Sidecar container resources (Inference)
+        - "sidecarContainers[0].resources.limits.cpu=1000m"
+        - "sidecarContainers[0].resources.limits.memory=1536Mi"
+        - "sidecarContainers[0].resources.requests.cpu=100m"
+        - "sidecarContainers[0].resources.requests.memory=384Mi"
       api_server: https://api.prod.corp.mongodb.com
       kubernetes_token:
         from_secret: prod_kubernetes_token
@@ -247,10 +260,11 @@ steps:
         - "ingress.enabled=true"
         - "ingress.hosts[0]=predictive-maintenance-alerts.industrysolutions.prod.corp.mongodb.com"
         - "mesh.enabled=true"
-        - "resources.limits.cpu=1000m"
-        - "resources.limits.memory=1536Mi"
-        - "resources.requests.cpu=500m"
-        - "resources.requests.memory=768Mi"
+        # Alerts app resources
+        - "resources.limits.cpu=500m"
+        - "resources.limits.memory=512Mi"
+        - "resources.requests.cpu=50m"
+        - "resources.requests.memory=192Mi"
       api_server: https://api.prod.corp.mongodb.com
       kubernetes_token:
         from_secret: prod_kubernetes_token
