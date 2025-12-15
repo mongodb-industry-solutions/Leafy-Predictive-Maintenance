@@ -48,13 +48,6 @@ sidecarContainers:
         value: "feature_store"
       - name: TRANSFORMED_DATA_COLLECTION
         value: "transformed_data"
-    resources:
-      limits:
-        cpu: 1000m
-        memory: 1536Mi
-      requests:
-        cpu: 500m
-        memory: 768Mi
 
 serviceAccount:
   enabled: true
