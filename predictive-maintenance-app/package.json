@@ -9,9 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.758.0",
-    "@aws-sdk/credential-provider-node": "^3.817.0",
-    "@aws-sdk/credential-provider-sso": "^3.817.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.984.0",
+    "@aws-sdk/credential-provider-node": "^3.972.5",
+    "@aws-sdk/credential-provider-sso": "^3.972.4",
     "@google-cloud/translate": "^9.0.0",
     "@langchain/aws": "^0.1.7",
     "@langchain/community": "^0.3.36",
