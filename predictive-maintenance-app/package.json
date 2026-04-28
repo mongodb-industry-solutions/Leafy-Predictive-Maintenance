@@ -51,6 +51,8 @@
     "license-checker": "^25.0.1"
   },
   "overrides": {
-    "@smithy/eventstream-codec": "^4.0.1"
+    "@smithy/eventstream-codec": "^4.0.1",
+    "fast-xml-parser": "4.5.4",
+    "protobufjs": "7.5.5"
   }
 }
